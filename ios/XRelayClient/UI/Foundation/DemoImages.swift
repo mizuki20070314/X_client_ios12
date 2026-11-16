@@ -14,7 +14,7 @@ enum DemoImages {
     /// `demo://avatar/<n>`, `demo://photo/<n>?w=&h=`, `demo://banner/<n>`, `demo://card/<n>`.
     /// `maxPixel` bounds the longer side; the loader always passes a value of at least 1.
     static func image(for url: URL, maxPixel: CGFloat) -> UIImage? {
-        let number = seed(url.lastPathComponent)
+        let number = seed(numberComponent(of: url))
         let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let width = intValue(query, "w")
         let height = intValue(query, "h")
@@ -30,6 +30,12 @@ enum DemoImages {
         default:
             return nil
         }
+    }
+
+    /// The path component right after the kind. A banner may carry its size after the number
+    /// (`banner/<n>/600x200`), so the last component is not always the number.
+    private static func numberComponent(of url: URL) -> String {
+        return url.pathComponents.dropFirst().first ?? ""
     }
 
     private static func avatar(_ number: Int, maxPixel: CGFloat) -> UIImage {

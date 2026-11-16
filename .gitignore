@@ -3,3 +3,4 @@ __pycache__/
 *.py[cod]
 sakura/private/
 sakura/www/cgi-bin/__pycache__/
+ios/XRelayClient.xcodeproj/
