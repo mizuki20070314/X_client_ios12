@@ -120,6 +120,10 @@ private final class BottomSheetViewController: UIViewController {
         titleLabel.font = Theme.font(15, .bold)
         titleLabel.textColor = palette.text
         titleLabel.numberOfLines = 1
+        titleLabel.lineBreakMode = .byTruncatingTail
+        // a long title shrinks to 80 % before it is truncated
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.8
         titleLabel.isHidden = sheetTitle == nil
         sheetView.addSubview(titleLabel)
 
@@ -163,6 +167,9 @@ private final class BottomSheetViewController: UIViewController {
         row.titleLabel.textColor = color
         row.titleLabel.numberOfLines = 1
         row.titleLabel.lineBreakMode = .byTruncatingTail
+        // a long row title shrinks to 80 % first, and only then is truncated at the tail
+        row.titleLabel.adjustsFontSizeToFitWidth = true
+        row.titleLabel.minimumScaleFactor = 0.8
         row.addTarget(self, action: #selector(rowTapped(_:)), for: .touchUpInside)
         return row
     }

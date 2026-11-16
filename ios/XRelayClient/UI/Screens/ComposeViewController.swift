@@ -27,8 +27,9 @@ final class ComposeViewController: BaseViewController, UITextViewDelegate {
     private let postTitle: String
     private var spinner: UIActivityIndicatorView?
     private var isSending = false
-    /// Height of the keyboard that covers the bottom of the view (0 while it is hidden).
-    private var keyboardOverlap: CGFloat = 0
+    /// The keyboard's end frame in screen coordinates, as UIKit reports it. It is converted in layout, because
+    /// the view may not be in a window yet when the notification arrives.
+    private var keyboardScreenFrame: CGRect?
 
     init(replyTo: Tweet?, quote: Tweet?) {
         self.replyTo = replyTo
@@ -62,6 +63,8 @@ final class ComposeViewController: BaseViewController, UITextViewDelegate {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        // the view is in its window now, so the bar can be placed against the keyboard's frame
+        view.setNeedsLayout()
         // the keyboard opens with the screen
         textView.becomeFirstResponder()
     }
@@ -72,9 +75,10 @@ final class ComposeViewController: BaseViewController, UITextViewDelegate {
         let contentX = Metrics.contentX(width)
         let contentWidth = Metrics.contentWidth(width)
 
-        // the counter bar sits on top of the keyboard, or on the bottom safe area when it is hidden
-        let bottomInset = max(keyboardOverlap, view.safeAreaInsets.bottom)
-        let barY = view.bounds.height - bottomInset - ComposeViewController.counterBarHeight
+        // the counter bar's bottom is the keyboard's top, or the bottom safe area edge while the keyboard is hidden
+        let bottomLimit = view.bounds.height - view.safeAreaInsets.bottom
+        let barBottom = min(bottomLimit, keyboardTopInView() ?? bottomLimit)
+        let barY = barBottom - ComposeViewController.counterBarHeight
         let top = contentTop
         body.frame = CGRect(x: 0, y: top, width: width, height: max(0, barY - top))
         counterBar.frame = CGRect(x: 0, y: barY, width: width, height: ComposeViewController.counterBarHeight)
@@ -192,21 +196,29 @@ final class ComposeViewController: BaseViewController, UITextViewDelegate {
 
     // MARK: - keyboard
 
-    /// Keeps the counter bar on top of the keyboard. The frame is given in window coordinates.
+    /// The keyboard moved: the bar follows it in the same animation. UIKit gives the end frame in screen coordinates,
+    /// which is kept and converted when the view is laid out.
     @objc private func keyboardChanged(_ notification: Notification) {
         guard let info = notification.userInfo else { return }
         let endValue = info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue
-        let endFrame = endValue?.cgRectValue ?? CGRect.zero
+        keyboardScreenFrame = endValue?.cgRectValue
         let duration = (info[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
         // the curve is passed as UIView.AnimationOptions shifted by 16 bits, as UIKit does it
         let curve = (info[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt) ?? 7
-        let frameInView = view.convert(endFrame, from: nil)
-        keyboardOverlap = max(0, view.bounds.height - frameInView.minY)
         UIView.animate(withDuration: duration, delay: 0, options: UIView.AnimationOptions(rawValue: curve << 16),
                        animations: {
                            self.view.setNeedsLayout()
                            self.view.layoutIfNeeded()
                        }, completion: nil)
+    }
+
+    /// The top of the keyboard in this view's coordinates, or nil while the view is not in a window or UIKit gave
+    /// no frame. The window need not cover the screen (the CI preview window is smaller than the simulator
+    /// screen), so the frame goes screen -> window -> view. On a full-screen window the first step is the identity.
+    private func keyboardTopInView() -> CGFloat? {
+        guard let screenFrame = keyboardScreenFrame, let window = view.window else { return nil }
+        let inWindow = window.convert(screenFrame, from: window.screen.coordinateSpace)
+        return view.convert(inWindow, from: window).minY
     }
 
     // MARK: - text helpers

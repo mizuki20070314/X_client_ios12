@@ -27,6 +27,8 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
     private(set) var isLoaded = false
 
     private var loader: Loader
+    /// What the list shows. The detail of a post (`.tweet`) applies the reply policy.
+    private var source: TimelineSource?
     private var rows: [TimelineRow] = []
     /// Cursor of the next (older) page; nil at the end of the list.
     private var bottom: String?
@@ -51,6 +53,7 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
     // MARK: - Setup
 
     init(source: TimelineSource) {
+        self.source = source
         loader = TimelineViewController.makeLoader(for: source)
         super.init(nibName: nil, bundle: nil)
         observeNotifications()
@@ -149,6 +152,7 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
 
     /// Switches what is shown: the rows are cleared and the first page of `source` loads at once.
     func setSource(_ source: TimelineSource) {
+        self.source = source
         loader = TimelineViewController.makeLoader(for: source)
         resetState()
         tableView.reloadData()
@@ -176,7 +180,7 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
         let height = row.height(for: tableView.bounds.width)
         let wasAtTop = tableView.contentOffset.y <= -tableView.contentInset.top + 1
         rows.insert(row, at: 0)
-        tableView.reloadData()
+        rowsChanged()
         if !wasAtTop {
             // the posts on screen stay where they are
             tableView.contentOffset.y += height
@@ -233,7 +237,7 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
         rows = TimelineRowFactory.rows(for: items)
         bottom = page.bottom
         isLoaded = true
-        tableView.reloadData()
+        rowsChanged()
         var shown = page
         shown.items = items
         onFirstPage?(shown)
@@ -291,7 +295,7 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
         // a page that adds no row is the end of the list
         bottom = fresh.isEmpty ? nil : page.bottom
         rows.append(contentsOf: fresh)
-        tableView.reloadData()
+        rowsChanged()
     }
 
     /// Loads the cursor of a "more" row and puts the rows of its page in the row's place.
@@ -319,10 +323,42 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
     private func replaceMoreRow(_ row: MoreRow, with page: TimelinePage) {
         guard let index = rows.firstIndex(where: { $0 === row }) else { return }
         rows.replaceSubrange(index..<(index + 1), with: newRows(from: page.items))
-        tableView.reloadData()
+        rowsChanged()
     }
 
     // MARK: - Rows
+
+    /// The rows changed: the reply policy follows, then the table is redrawn.
+    private func rowsChanged() {
+        applyReplyPolicy()
+        tableView.reloadData()
+    }
+
+    /// In the detail of a post (`.tweet`), a reply below the focal post shows no reply line when it answers the focal
+    /// post, or the post directly above it in the same thread (ui-spec.md §4.3-4). The posts above the focal post
+    /// (its ancestors) keep their reply line.
+    private func applyReplyPolicy() {
+        guard case .tweet? = source,
+              let focalIndex = rows.firstIndex(where: { $0 is FocalTweetRow }),
+              let focalID = tweetID(of: rows[focalIndex]) else {
+            for case let row as TweetRow in rows {
+                row.hidesReplyLine = false
+            }
+            return
+        }
+        for index in rows.indices {
+            guard let row = rows[index] as? TweetRow else { continue }
+            var hides = false
+            if index > focalIndex {
+                let replyTo = row.tweet.replyToID
+                let aboveID = index > 0 ? tweetID(of: rows[index - 1]) : nil
+                let answersFocal = replyTo == focalID
+                let answersAbove = row.entry.above && replyTo != nil && replyTo == aboveID
+                hides = answersFocal || answersAbove
+            }
+            row.hidesReplyLine = hides
+        }
+    }
 
     /// The rows of a page that is not the first one. A stand-alone post that is listed already is dropped;
     /// the posts of one conversation (above/below) are kept as the server sent them.
@@ -344,7 +380,7 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
         let count = rows.count
         rows.removeAll { tweetID(of: $0) == id }
         guard rows.count != count else { return }
-        tableView.reloadData()
+        rowsChanged()
         refreshStateViews()
     }
 

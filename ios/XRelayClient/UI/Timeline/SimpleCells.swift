@@ -179,39 +179,49 @@ extension UserLayout {
         let reservesFollow = user.id != Session.shared.me?.id
         let nameWidth = max(0, contentWidth - (reservesFollow ? followWidth + 8 : 0))
 
-        // the handle shortens first when the chip does not fit beside it
+        // the handle has priority: it keeps its full width and is cut only when it does not fit the line itself
         let handleText = NSString(string: "@" + user.handle)
         let handleFullWidth = ceil(handleText.size(withAttributes: [
             NSAttributedString.Key.font: Theme.font(15)
         ]).width)
+        let handleWidth = min(handleFullWidth, nameWidth)
+
         let chipFont = Theme.font(11, .medium)
         let chipText = NSString(string: "フォローされています")
         let chipTextWidth = ceil(chipText.size(withAttributes: [NSAttributedString.Key.font: chipFont]).width)
         let chipWidth = chipTextWidth + 8
         let chipHeight = ceil(chipFont.lineHeight) + 4
-        let chipSpace: CGFloat = user.followedBy ? chipWidth + 6 : 0
-        let handleWidth = min(handleFullWidth, max(0, nameWidth - chipSpace))
+        // the chip joins the handle only when it fits completely beside it; otherwise it gets a line of its own
+        let chipOnHandleLine = user.followedBy && handleFullWidth + 6 + chipWidth <= nameWidth
 
+        // the handle line ends at 52 pt; a chip on a line of its own sits 4 pt under the handle
+        var headerBottom: CGFloat = 52
         var chipFrame: CGRect?
         if user.followedBy {
-            chipFrame = CGRect(x: contentX + handleWidth + 6, y: 32 + (20 - chipHeight) / 2,
-                               width: chipWidth, height: chipHeight)
+            if chipOnHandleLine {
+                chipFrame = CGRect(x: contentX + handleWidth + 6, y: 32 + (20 - chipHeight) / 2,
+                                   width: chipWidth, height: chipHeight)
+            } else {
+                chipFrame = CGRect(x: contentX, y: 52 + 4, width: chipWidth, height: chipHeight)
+                headerBottom = 52 + 4 + chipHeight
+            }
         }
         var followFrame: CGRect?
         if reservesFollow {
             followFrame = CGRect(x: width - pad - followWidth, y: 12, width: followWidth, height: 32)
         }
 
-        var bottom: CGFloat = 52
+        // the bio sits 4 pt under the last line of the header
+        var bottom = headerBottom
         var bioFrame: CGRect?
         var bio: TextLayout?
         if !user.bio.isEmpty {
             let attributed = TweetText.attributed(user.bio, entities: user.bioEntities, font: Theme.font(15),
                                                   color: palette.text, linkColor: palette.accent, lineSpacing: 2)
             let layout = TextLayout(attributed, width: contentWidth, maxLines: 2, entities: user.bioEntities)
-            bioFrame = CGRect(x: contentX, y: 56, width: contentWidth, height: layout.size.height)
+            bioFrame = CGRect(x: contentX, y: headerBottom + 4, width: contentWidth, height: layout.size.height)
             bio = layout
-            bottom = 56 + layout.size.height
+            bottom = headerBottom + 4 + layout.size.height
         }
         let height = bottom + 12
         return UserLayout(

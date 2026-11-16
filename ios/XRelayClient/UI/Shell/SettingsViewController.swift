@@ -23,8 +23,8 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
     private var isTestingConnection = false
     /// How much of the scroll view the keyboard covers.
     private var keyboardInset: CGFloat = 0
-    /// A Keychain error found while loading; shown once the screen has appeared.
-    private var pendingAlert: (title: String, message: String)?
+    /// The stored key could not be read when the screen opened; saving an empty key would clear it.
+    private var keyReadFailed = false
 
     init(isInitialSetup: Bool = false) {
         self.isInitialSetup = isInitialSetup
@@ -74,10 +74,11 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
             urlField.text = RelayClient.shared.baseURL.absoluteString
         }
         profileField.text = RelayClient.shared.profileName
+        // A failed read is not something the user can act on: the field stays empty, and no alert is shown.
         do {
             keyField.text = try RelayClient.shared.loadBearerToken()
         } catch {
-            pendingAlert = (title: "Keychainエラー", message: error.localizedDescription)
+            keyReadFailed = true
         }
 
         urlRow.configureField(title: "リレーURL", field: urlField)
@@ -115,14 +116,6 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)),
                                                name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        if let alert = pendingAlert {
-            pendingAlert = nil
-            showAlert(title: alert.title, message: alert.message)
-        }
     }
 
     override func layoutContent() {
@@ -255,6 +248,11 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
     private func saveSettings() {
         guard let url = validatedRelayURL() else { return }
         guard hasValidTokenLength() else { return }
+        // An empty key would clear the stored one, and that one could not be read: ask for the key first.
+        if keyReadFailed && isKeyEmpty {
+            showAlert(title: "CGIキーエラー", message: "CGIキーを入力してください。")
+            return
+        }
         do {
             try RelayClient.shared.saveSettings(
                 baseURL: url,
@@ -265,6 +263,8 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
             showAlert(title: "保存に失敗しました", message: error.localizedDescription)
             return
         }
+        // the Keychain now holds what the field shows, so the earlier read failure no longer matters
+        keyReadFailed = false
         Session.shared.refresh()
         Toast.show("保存しました")
         if isInitialSetup {
@@ -308,6 +308,10 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
         return path.split(separator: "/").allSatisfy { segment in
             segment.range(of: "^[A-Za-z0-9_-]+$", options: .regularExpression) != nil
         }
+    }
+
+    private var isKeyEmpty: Bool {
+        return (keyField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "").isEmpty
     }
 
     private func hasValidTokenLength() -> Bool {

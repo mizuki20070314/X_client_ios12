@@ -19,6 +19,8 @@ struct FocalTweetLayout {
     let text: TextLayout?
     let attachments: TweetAttachmentFrames
     let timeFrame: CGRect
+    /// The metadata line (date and view count): one line, or two when the whole line does not fit.
+    let meta: TextLayout
     /// The hairline between the time and the action bar (pad to W - pad).
     let topRuleFrame: CGRect
     let actionFrame: CGRect
@@ -88,8 +90,11 @@ extension FocalTweetLayout {
         y = attachments.bottom
 
         y += 12
-        let timeFrame = CGRect(x: pad, y: y, width: bodyWidth, height: 20)
-        y += 20 + 12
+        let meta = metadataLayout(for: tweet, width: bodyWidth)
+        // a single line is 20 pt high (ui-spec.md §4.4); a second line adds its own height
+        let metaHeight = max(20, meta.size.height)
+        let timeFrame = CGRect(x: pad, y: y, width: bodyWidth, height: metaHeight)
+        y += metaHeight + 12
 
         let topRuleFrame = CGRect(x: pad, y: y, width: bodyWidth, height: Metrics.hairline)
         y += Metrics.hairline
@@ -122,11 +127,44 @@ extension FocalTweetLayout {
             text: text,
             attachments: attachments,
             timeFrame: timeFrame,
+            meta: meta,
             topRuleFrame: topRuleFrame,
             actionFrame: actionFrame,
             hairlineFrame: hairlineFrame,
             threadAbove: threadAbove
         )
+    }
+}
+
+extension FocalTweetLayout {
+    /// "午後8:48 · 2026年11月16日 · 13.4万 件の表示" (15 pt). When the whole line does not fit, the view count goes to
+    /// a second line, so the break falls after the date part. No line limit: the height comes from this layout.
+    static func metadataLayout(for tweet: Tweet, width: CGFloat) -> TextLayout {
+        let oneLine = metadataText(for: tweet, countOnNewLine: false)
+        let fitsOnOneLine = !TextLayout(oneLine, width: width, maxLines: 1).isTruncated
+        let text = fitsOnOneLine ? oneLine : metadataText(for: tweet, countOnNewLine: true)
+        return TextLayout(text, width: width, maxLines: 0)
+    }
+
+    private static func metadataText(for tweet: Tweet, countOnNewLine: Bool) -> NSAttributedString {
+        let palette = Theme.palette
+        let secondary: [NSAttributedString.Key: Any] = [
+            .font: Theme.font(15),
+            .foregroundColor: palette.secondaryText
+        ]
+        let result = NSMutableAttributedString(string: Format.fullTimestamp(tweet.createdAt), attributes: secondary)
+        if let views = tweet.viewCount {
+            let count: [NSAttributedString.Key: Any] = [
+                .font: Theme.font(15, .bold),
+                .foregroundColor: palette.text
+            ]
+            // the line break takes the place of the separator, so the second line starts with the count
+            let separator = countOnNewLine ? "\n" : " · "
+            result.append(NSAttributedString(string: separator, attributes: secondary))
+            result.append(NSAttributedString(string: Format.count(views), attributes: count))
+            result.append(NSAttributedString(string: " 件の表示", attributes: secondary))
+        }
+        return result
     }
 }
 
@@ -155,7 +193,7 @@ final class FocalTweetCell: TimelineCellBase {
     private let replyLabel = UILabel()
     private let bodyLabel = LinkLabel(frame: .zero)
     private let attachments = TweetAttachmentViews()
-    private let timeLabel = UILabel()
+    private let metaLabel = LinkLabel(frame: .zero)
     private let topRule = UIView()
     private let actionBar = FocalActionBarView(frame: .zero)
 
@@ -178,7 +216,6 @@ final class FocalTweetCell: TimelineCellBase {
         replyLabel.font = Theme.font(15)
         replyLabel.numberOfLines = 1
         replyLabel.lineBreakMode = .byTruncatingTail
-        timeLabel.numberOfLines = 1
         topRule.backgroundColor = palette.separator
         overflowButton.setImage(Icons.image(.overflow, size: TimelineSpec.overflowIconSize), for: .normal)
         overflowButton.tintColor = palette.secondaryText
@@ -214,7 +251,7 @@ final class FocalTweetCell: TimelineCellBase {
         }
 
         let views: [UIView] = [contextIcon, contextLabel, avatar, nameLine, handleLabel, overflowButton,
-                               followButton, replyLabel, bodyLabel, timeLabel, topRule]
+                               followButton, replyLabel, bodyLabel, metaLabel, topRule]
         for view in views {
             contentView.addSubview(view)
         }
@@ -252,8 +289,8 @@ final class FocalTweetCell: TimelineCellBase {
 
         attachments.apply(tweet, frames: layout.attachments)
 
-        timeLabel.timelinePlace(layout.timeFrame)
-        timeLabel.attributedText = FocalTweetCell.timeText(for: tweet)
+        metaLabel.timelinePlace(layout.timeFrame)
+        metaLabel.textLayout = layout.meta
         topRule.timelinePlace(layout.topRuleFrame)
 
         actionBar.timelinePlace(layout.actionFrame)
@@ -269,6 +306,7 @@ final class FocalTweetCell: TimelineCellBase {
         avatar.set(url: nil, square: false, size: Metrics.avatar)
         attachments.reset()
         bodyLabel.textLayout = nil
+        metaLabel.textLayout = nil
     }
 
     deinit {
@@ -276,26 +314,6 @@ final class FocalTweetCell: TimelineCellBase {
     }
 
     // MARK: - Private
-
-    /// "午後7:05 · 2026年11月16日", then " · 1,234 件の表示" when the post has a view count.
-    private static func timeText(for tweet: Tweet) -> NSAttributedString {
-        let palette = Theme.palette
-        let secondary: [NSAttributedString.Key: Any] = [
-            .font: Theme.font(15),
-            .foregroundColor: palette.secondaryText
-        ]
-        let result = NSMutableAttributedString(string: Format.fullTimestamp(tweet.createdAt), attributes: secondary)
-        if let views = tweet.viewCount {
-            let count: [NSAttributedString.Key: Any] = [
-                .font: Theme.font(15, .bold),
-                .foregroundColor: palette.text
-            ]
-            result.append(NSAttributedString(string: " · ", attributes: secondary))
-            result.append(NSAttributedString(string: Format.count(views), attributes: count))
-            result.append(NSAttributedString(string: " 件の表示", attributes: secondary))
-        }
-        return result
-    }
 
     private func applyContext(_ entry: TweetEntry, layout: FocalTweetLayout) {
         guard let context = TweetContextLine.display(for: entry) else {

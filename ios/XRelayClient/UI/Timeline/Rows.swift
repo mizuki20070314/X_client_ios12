@@ -99,6 +99,14 @@ final class TweetRow: TimelineRow {
     let entry: TweetEntry
     /// Filled by `layout(for:)` in TweetCell.swift.
     var layoutCache: TweetLayout?
+    /// Set by TimelineViewController in a post's detail: this reply shows no reply line (`applyReplyPolicy`).
+    var hidesReplyLine = false {
+        didSet {
+            if oldValue != hidesReplyLine {
+                layoutCache = nil
+            }
+        }
+    }
 
     init(entry: TweetEntry) {
         self.entry = entry

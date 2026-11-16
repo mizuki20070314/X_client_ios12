@@ -158,7 +158,7 @@ struct TweetLayout {
 }
 
 extension TweetLayout {
-    static func make(entry: TweetEntry, width: CGFloat) -> TweetLayout {
+    static func make(entry: TweetEntry, width: CGFloat, showsReplyLine: Bool) -> TweetLayout {
         let palette = Theme.palette
         let tweet = entry.tweet
         let pad = Metrics.pad(width)
@@ -186,8 +186,8 @@ extension TweetLayout {
 
         var replyFrame: CGRect?
         var replyText: NSAttributedString?
-        // a reply that continues the row above shows no reply line
-        if !tweet.replyToHandles.isEmpty && !entry.above {
+        // a reply that continues the row above, or that the detail leaves out, shows no reply line
+        if showsReplyLine && !tweet.replyToHandles.isEmpty && !entry.above {
             replyFrame = CGRect(x: contentX, y: y, width: contentWidth, height: 20)
             replyText = ReplyLine.attributed(handles: tweet.replyToHandles)
             y += 22
@@ -269,7 +269,7 @@ extension TweetRow {
         if let cached = layoutCache, cached.width == width {
             return cached
         }
-        let fresh = TweetLayout.make(entry: entry, width: width)
+        let fresh = TweetLayout.make(entry: entry, width: width, showsReplyLine: !hidesReplyLine)
         layoutCache = fresh
         return fresh
     }

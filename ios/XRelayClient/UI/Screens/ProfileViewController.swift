@@ -197,6 +197,9 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
         header.onOverflowTap = { [weak self] in
             self?.showOverflow()
         }
+        header.onEditTap = { [weak self] in
+            self?.openEditProfile()
+        }
         header.onTabSelect = { [weak self] index in
             self?.selectProfileTab(index)
         }
@@ -325,6 +328,12 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
         BottomSheet.present(from: self, title: nil, items: items)
     }
 
+    /// The edit button of the own profile. The app has no profile editor, so the settings page on the web opens.
+    private func openEditProfile() {
+        guard let url = URL(string: "https://x.com/settings/profile") else { return }
+        Router.openURL(url)
+    }
+
     private func copyProfileLink() {
         guard let user = user else { return }
         UIPasteboard.general.string = "https://x.com/\(user.handle)"
@@ -346,12 +355,22 @@ final class ProfileHeaderView: UIView {
     /// true: the followers list, false: the following list.
     var onCountTap: ((Bool) -> Void)?
     var onLinkTap: (() -> Void)?
+    /// The edit button of the own profile (it takes the follow button's place).
+    var onEditTap: (() -> Void)?
 
     private static let avatarSide: CGFloat = 72
     private static let ringWidth: CGFloat = 4
     private static let buttonSide: CGFloat = 32
     /// Starting width of the follow button before it sizes itself to its title.
     private static let followStartWidth: CGFloat = 96
+    private static let editButtonTitle = "プロフィールを編集"
+    /// The title plus 16 pt on each side, and never narrower than the follow button.
+    private static let editButtonWidth: CGFloat = {
+        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: Theme.font(14, .bold)]
+        let title = NSString(string: ProfileHeaderView.editButtonTitle)
+        let textWidth = ceil(title.size(withAttributes: attributes).width)
+        return max(ProfileHeaderView.followStartWidth, textWidth + 32)
+    }()
     private static let tabHeight: CGFloat = 44
     private static let nameHeight: CGFloat = 24
     private static let lineHeight: CGFloat = 20
@@ -360,6 +379,7 @@ final class ProfileHeaderView: UIView {
     private let ring = UIView()
     private let avatar = AvatarView()
     private let followButton = FollowButton()
+    private let editButton = UIButton(type: .custom)
     private let overflowButton = UIButton(type: .custom)
     private let nameLabel = UILabel()
     private let badgeView = UIImageView()
@@ -396,6 +416,16 @@ final class ProfileHeaderView: UIView {
         overflowButton.tintColor = palette.secondaryText
         overflowButton.addTarget(self, action: #selector(overflowTapped), for: .touchUpInside)
 
+        // the outlined pill of FollowButton's "following" state: hairline border, text colour, 14 bold, 32 high
+        editButton.setTitle(ProfileHeaderView.editButtonTitle, for: .normal)
+        editButton.setTitleColor(palette.text, for: .normal)
+        editButton.titleLabel?.font = Theme.font(14, .bold)
+        editButton.backgroundColor = UIColor.clear
+        editButton.layer.cornerRadius = ProfileHeaderView.buttonSide / 2
+        editButton.layer.borderWidth = Metrics.hairline
+        editButton.layer.borderColor = palette.border.cgColor
+        editButton.addTarget(self, action: #selector(editTapped), for: .touchUpInside)
+
         nameLabel.font = Theme.font(20, .bold)
         nameLabel.textColor = palette.text
         nameLabel.numberOfLines = 1
@@ -428,6 +458,7 @@ final class ProfileHeaderView: UIView {
         addSubview(ring)
         addSubview(avatar)
         addSubview(followButton)
+        addSubview(editButton)
         addSubview(overflowButton)
         addSubview(nameLabel)
         addSubview(badgeView)
@@ -463,7 +494,13 @@ final class ProfileHeaderView: UIView {
         let buttonY = bannerHeight + 12
         let overflowX = width - pad - buttonSide
         overflowButton.frame = CGRect(x: overflowX, y: buttonY, width: buttonSide, height: buttonSide)
+        // the follow button for other accounts; the edit button on the own profile, in the same place
         followButton.isHidden = isOwn
+        editButton.isHidden = !isOwn
+        if isOwn {
+            let editWidth = ProfileHeaderView.editButtonWidth
+            editButton.frame = CGRect(x: overflowX - 8 - editWidth, y: buttonY, width: editWidth, height: buttonSide)
+        }
         if !isOwn {
             followButton.set(user: user)
             followButton.frame = CGRect(x: 0, y: buttonY, width: ProfileHeaderView.followStartWidth, height: buttonSide)
@@ -658,6 +695,10 @@ final class ProfileHeaderView: UIView {
 
     @objc private func overflowTapped() {
         onOverflowTap?()
+    }
+
+    @objc private func editTapped() {
+        onEditTap?()
     }
 
     @objc private func linkTapped() {
