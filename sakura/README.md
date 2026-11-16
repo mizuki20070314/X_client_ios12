@@ -12,11 +12,11 @@ Chromiumや常駐プロセスを使わず、CGIの各リクエストからXの�
 
 ## セットアップ
 
-1. Sakuraの公開ディレクトリ`/home/<アカウント>/www/`に、`sakura/www/`の`.htaccess`、`requests.ndjson`、`cgi-bin/xrelay.cgi`を転送します。スクリプトは`755`または`705`、ディレクトリは`755`または`705`にします。
+1. 既存サイトを上書きしないよう、公開ディレクトリのサブフォルダー`/home/<アカウント>/www/xclient/`を作り、`sakura/www/`の中身（`.htaccess`、`requests.ndjson`、`cgi-bin/xrelay.cgi`）をそこへ転送します。スクリプトは`755`または`705`、ディレクトリは`755`または`705`にします。
 2. Python 3.8と互換性のある依存関係をユーザー領域へ入れます。
 
    ```sh
-   python -m pip install --user -r ~/private/xclient_ios12/sakura/requirements.txt
+   python -m pip install --target ~/private/xrelay/python -r ~/private/xclient_ios12/sakura/requirements.txt
    ```
 
    リポジトリの`twitter_openapi_python`高水準パッケージはPython 3.10以上を要求するため、このCGIでは使わず、標準的なHTTP処理と`xclienttransaction`を使います。
@@ -29,7 +29,7 @@ Chromiumや常駐プロセスを使わず、CGIの各リクエストからXの�
 
    Cookieの`auth_token`/`ct0`と、Cookie取得時のブラウザーUser-Agent/OSを対話入力します。必要ならX Web AppのBearer tokenを上書きできます。値は入力中に表示されず、設定ファイルは`600`、親ディレクトリは`700`で作成されます。表示されるCGIキーだけをiOSアプリの設定に入力してください。CookieやBearer tokenをチャットやGitHubへ貼らないでください。
 
-4. iOSアプリには、`https://<公開ドメイン>`、プロフィール名（初期値`account1`）、CGIキーを設定し、接続テストを行います。SSHホスト名`www3414.sakura.ne.jp`はWebサイトの公開URLとは限りません。
+4. iOSアプリには、`https://<公開ドメイン>/xclient`、プロフィール名（初期値`account1`）、CGIキーを設定し、接続テストを行います。SSHホスト名`www3414.sakura.ne.jp`はWebサイトの公開URLとは限りません。
 
 ## 更新
 

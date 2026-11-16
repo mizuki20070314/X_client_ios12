@@ -211,11 +211,11 @@ final class RelayClient {
         completion: @escaping (Result<Any, Error>) -> Void
     ) {
         let relayPath = path.hasPrefix("/i/api/") ? path : "/i/api\(path)"
-        guard let url = URL(string: relayPath, relativeTo: baseURL) else {
-            completion(.failure(APIError.invalidURL))
-            return
-        }
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
+        let basePath = baseURL.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let requestPath = relayPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let pathParts = [basePath, requestPath].filter { !$0.isEmpty }
+        components?.path = "/" + pathParts.joined(separator: "/")
         components?.queryItems = query.compactMap { key, value in
             guard let value = Self.queryValue(value) else { return nil }
             return URLQueryItem(name: key, value: value)

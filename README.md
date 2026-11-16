@@ -16,7 +16,7 @@ UIKit製のXクライアントです。タイムライン、キーワード検�
 open ios/XRelayClient.xcodeproj
 ```
 
-アプリの「設定」で公開サイトのHTTPS URL（例：`https://your-domain.example`）、プロフィール名、CGIキーを入力して接続テストを行います。初回は「設定」画面を開いてサーバーを登録してください。
+アプリの「設定」でCGIを置いたサブディレクトリのHTTPS URL（例：`https://your-domain.example/xclient`）、プロフィール名、CGIキーを入力して接続テストを行います。初回は「設定」画面を開いてサーバーを登録してください。
 
 主な機能:
 

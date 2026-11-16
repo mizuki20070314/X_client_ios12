@@ -20,6 +20,11 @@ from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urljoin
 
+PRIVATE_ROOT = Path.home() / "private" / "xrelay"
+PRIVATE_PYTHON = PRIVATE_ROOT / "python"
+if PRIVATE_PYTHON.is_dir():
+    sys.path.insert(0, str(PRIVATE_PYTHON))
+
 try:
     import fcntl
 except ImportError:
@@ -54,7 +59,7 @@ def _config_path():
     override = os.environ.get("XRELAY_CONFIG")
     if override:
         return Path(override).expanduser()
-    return Path.home() / "private" / "xrelay" / "config.json"
+    return PRIVATE_ROOT / "config.json"
 
 
 def _load_config():

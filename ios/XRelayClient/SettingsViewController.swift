@@ -150,7 +150,7 @@ final class SettingsViewController: UITableViewController {
               let host = components.host, !host.isEmpty,
               components.user == nil, components.password == nil,
               components.query == nil, components.fragment == nil,
-              components.path.isEmpty || components.path == "/",
+              Self.isSafeBasePath(components.path),
               let url = components.url else {
             showAlert(title: "URLエラー", message: APIError.invalidURL.localizedDescription)
             return nil
@@ -163,6 +163,13 @@ final class SettingsViewController: UITableViewController {
             return nil
         }
         return url
+    }
+
+    private static func isSafeBasePath(_ path: String) -> Bool {
+        guard !path.contains("//") else { return false }
+        path.split(separator: "/").allSatisfy { segment in
+            segment.range(of: "^[A-Za-z0-9_-]+$", options: .regularExpression) != nil
+        }
     }
 
     private func hasValidTokenLength() -> Bool {
