@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100014",
+    "name": "技術メモ",
+    "handle": "tech_memo_demo",
+    "avatar": "demo://avatar/100014",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": false,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100014",
+    "bio": "小さなツールを公開しています。",
+    "bio_entities": [],
+    "location": "",
+    "url": null,
+    "joined": 1530000000,
+    "followers": 1800,
+    "friends": 30,
+    "tweets": 640,
+    "media_count": 12,
+    "likes_count": 300,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

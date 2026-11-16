@@ -1,0 +1,717 @@
+{
+  "_base": 1794823500,
+  "items": [
+    {
+      "t": "notification",
+      "id": "ntf-001",
+      "icon": "heart",
+      "text": "佐藤 花子さんがあなたのポストにいいねしました",
+      "bold": [
+        [
+          0,
+          5
+        ]
+      ],
+      "users": [
+        {
+          "id": "100002",
+          "name": "佐藤 花子",
+          "handle": "hanako_sato_demo",
+          "avatar": "demo://avatar/100002",
+          "verified": "blue",
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        }
+      ],
+      "tweet": {
+        "id": "2122000000000000052",
+        "user": {
+          "id": "100001",
+          "name": "山田 太郎",
+          "handle": "yamada_demo",
+          "avatar": "demo://avatar/100001",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "今日の散歩道で撮った一枚です。",
+        "entities": [],
+        "long": false,
+        "created_at": 1794818100,
+        "reply_count": 2,
+        "retweet_count": 3,
+        "like_count": 34,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 2600,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [
+          {
+            "type": "photo",
+            "url": "demo://photo/116?w=1200&h=800",
+            "w": 1200,
+            "h": 800,
+            "alt": "散歩道",
+            "video": null
+          }
+        ],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": null,
+        "conversation_id": "2122000000000000052",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "time": 1794822900,
+      "url": "https://x.com/yamada_demo/status/2122000000000000052"
+    },
+    {
+      "t": "notification",
+      "id": "ntf-002",
+      "icon": "repost",
+      "text": "鈴木 健太さんがあなたのポストをリポストしました",
+      "bold": [
+        [
+          0,
+          5
+        ]
+      ],
+      "users": [
+        {
+          "id": "100003",
+          "name": "鈴木 健太",
+          "handle": "kenta_suzuki",
+          "avatar": "demo://avatar/100003",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        }
+      ],
+      "tweet": {
+        "id": "2122000000000000054",
+        "user": {
+          "id": "100001",
+          "name": "山田 太郎",
+          "handle": "yamada_demo",
+          "avatar": "demo://avatar/100001",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "夕方の空。",
+        "entities": [],
+        "long": false,
+        "created_at": 1794787500,
+        "reply_count": 3,
+        "retweet_count": 4,
+        "like_count": 61,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 5300,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [
+          {
+            "type": "photo",
+            "url": "demo://photo/117?w=1200&h=900",
+            "w": 1200,
+            "h": 900,
+            "alt": null,
+            "video": null
+          },
+          {
+            "type": "photo",
+            "url": "demo://photo/118?w=900&h=1200",
+            "w": 900,
+            "h": 1200,
+            "alt": null,
+            "video": null
+          }
+        ],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": null,
+        "conversation_id": "2122000000000000054",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "time": 1794819900,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-003",
+      "icon": "person",
+      "text": "高橋 みさきさんにフォローされました",
+      "bold": [
+        [
+          0,
+          6
+        ]
+      ],
+      "users": [
+        {
+          "id": "100004",
+          "name": "高橋 みさき",
+          "handle": "misaki_takahashi",
+          "avatar": "demo://avatar/100004",
+          "verified": "business",
+          "square": true,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": {
+            "text": "サンプル株式会社",
+            "badge": "demo://avatar/900"
+          }
+        }
+      ],
+      "tweet": null,
+      "time": 1794816300,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-004",
+      "icon": "star",
+      "text": "加藤 ゆいさんのポストが注目されています",
+      "bold": [
+        [
+          0,
+          5
+        ]
+      ],
+      "users": [
+        {
+          "id": "100009",
+          "name": "加藤 ゆい",
+          "handle": "yui_kato_art",
+          "avatar": "demo://avatar/100009",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        }
+      ],
+      "tweet": {
+        "id": "2122000000000000055",
+        "user": {
+          "id": "100001",
+          "name": "山田 太郎",
+          "handle": "yamada_demo",
+          "avatar": "demo://avatar/100001",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "新しいレンズを試しました。",
+        "entities": [],
+        "long": false,
+        "created_at": 1794733500,
+        "reply_count": 1,
+        "retweet_count": 0,
+        "like_count": 44,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 4100,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [
+          {
+            "type": "photo",
+            "url": "demo://photo/119?w=1200&h=800",
+            "w": 1200,
+            "h": 800,
+            "alt": null,
+            "video": null
+          }
+        ],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": null,
+        "conversation_id": "2122000000000000055",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "time": 1794812700,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-005",
+      "icon": "bell",
+      "text": "お知らせ: 新しいバージョンがあります",
+      "bold": [],
+      "users": [],
+      "tweet": null,
+      "time": 1794809100,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-006",
+      "icon": "reply",
+      "text": "木村 拓真さんがあなたのポストに返信しました",
+      "bold": [
+        [
+          0,
+          5
+        ]
+      ],
+      "users": [
+        {
+          "id": "100010",
+          "name": "木村 拓真",
+          "handle": "takuma_kimura",
+          "avatar": "demo://avatar/100010",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        }
+      ],
+      "tweet": {
+        "id": "2122000000000000066",
+        "user": {
+          "id": "100010",
+          "name": "木村 拓真",
+          "handle": "takuma_kimura",
+          "avatar": "demo://avatar/100010",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "次の週末は空いていますか？",
+        "entities": [],
+        "long": false,
+        "created_at": 1794820500,
+        "reply_count": 0,
+        "retweet_count": 0,
+        "like_count": 0,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 90,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": {
+          "id": "2122000000000000053",
+          "handles": [
+            "yamada_demo"
+          ]
+        },
+        "conversation_id": "2122000000000000053",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "time": 1794805500,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-007",
+      "icon": "logo",
+      "text": "X からのお知らせ（デモ）",
+      "bold": [],
+      "users": [],
+      "tweet": null,
+      "time": 1794801900,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-008",
+      "icon": "alert",
+      "text": "アカウントの確認が必要です（デモ）",
+      "bold": [],
+      "users": [],
+      "tweet": null,
+      "time": 1794798300,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-009",
+      "icon": "sparkle",
+      "text": "新しいフォロワーが増えました（デモ）",
+      "bold": [],
+      "users": [],
+      "tweet": null,
+      "time": 1794794700,
+      "url": null
+    },
+    {
+      "t": "notification",
+      "id": "ntf-010",
+      "icon": "heart",
+      "text": "佐藤 花子さんほか7人がいいねしました",
+      "bold": [
+        [
+          0,
+          5
+        ]
+      ],
+      "users": [
+        {
+          "id": "100002",
+          "name": "佐藤 花子",
+          "handle": "hanako_sato_demo",
+          "avatar": "demo://avatar/100002",
+          "verified": "blue",
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100003",
+          "name": "鈴木 健太",
+          "handle": "kenta_suzuki",
+          "avatar": "demo://avatar/100003",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100007",
+          "name": "中村 葵",
+          "handle": "aoi_nakamura",
+          "avatar": "demo://avatar/100007",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100008",
+          "name": "小林 翔",
+          "handle": "sho_kobayashi",
+          "avatar": "demo://avatar/100008",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100009",
+          "name": "加藤 ゆい",
+          "handle": "yui_kato_art",
+          "avatar": "demo://avatar/100009",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100010",
+          "name": "木村 拓真",
+          "handle": "takuma_kimura",
+          "avatar": "demo://avatar/100010",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100012",
+          "name": "井上 海斗",
+          "handle": "kaito_inoue",
+          "avatar": "demo://avatar/100012",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        {
+          "id": "100004",
+          "name": "高橋 みさき",
+          "handle": "misaki_takahashi",
+          "avatar": "demo://avatar/100004",
+          "verified": "business",
+          "square": true,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": {
+            "text": "サンプル株式会社",
+            "badge": "demo://avatar/900"
+          }
+        }
+      ],
+      "tweet": {
+        "id": "2122000000000000052",
+        "user": {
+          "id": "100001",
+          "name": "山田 太郎",
+          "handle": "yamada_demo",
+          "avatar": "demo://avatar/100001",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "今日の散歩道で撮った一枚です。",
+        "entities": [],
+        "long": false,
+        "created_at": 1794818100,
+        "reply_count": 2,
+        "retweet_count": 3,
+        "like_count": 34,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 2600,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [
+          {
+            "type": "photo",
+            "url": "demo://photo/116?w=1200&h=800",
+            "w": 1200,
+            "h": 800,
+            "alt": "散歩道",
+            "video": null
+          }
+        ],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": null,
+        "conversation_id": "2122000000000000052",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "time": 1794791100,
+      "url": null
+    },
+    {
+      "t": "tweet",
+      "tweet": {
+        "id": "2122000000000000065",
+        "user": {
+          "id": "100008",
+          "name": "小林 翔",
+          "handle": "sho_kobayashi",
+          "avatar": "demo://avatar/100008",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "写真見ました！",
+        "entities": [],
+        "long": false,
+        "created_at": 1794822800,
+        "reply_count": 0,
+        "retweet_count": 0,
+        "like_count": 2,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 150,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": {
+          "id": "2122000000000000052",
+          "handles": [
+            "yamada_demo"
+          ]
+        },
+        "conversation_id": "2122000000000000052",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "context": null,
+      "above": false,
+      "below": false,
+      "focal": false
+    },
+    {
+      "t": "tweet",
+      "tweet": {
+        "id": "2122000000000000067",
+        "user": {
+          "id": "100007",
+          "name": "中村 葵",
+          "handle": "aoi_nakamura",
+          "avatar": "demo://avatar/100007",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": true,
+          "followed_by": true,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "一緒に行きましょう！",
+        "entities": [],
+        "long": false,
+        "created_at": 1794819300,
+        "reply_count": 0,
+        "retweet_count": 0,
+        "like_count": 6,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 330,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": {
+          "id": "2122000000000000020",
+          "handles": [
+            "yamada_demo"
+          ]
+        },
+        "conversation_id": "2122000000000000020",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "ja",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false
+      },
+      "context": null,
+      "above": false,
+      "below": false,
+      "focal": false
+    }
+  ],
+  "top": null,
+  "bottom": null
+}

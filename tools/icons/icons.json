@@ -1,0 +1,201 @@
+{
+  "_about": "Icon definitions read by tools/build_icons.py. An icon is a list of layers, or an object with layers plus an optional strokeWidth (grid units) and source (the Lucide file its path data was copied from, shown in the preview). A layer has exactly one source (svg: a file in tools/icons/svg, d: SVG path data, shapes: our own circle/line/polygon/rect/ellipse/polyline/path) and one mode (stroke, fill, fillAndStroke, clearStroke, clearFill). Lucide sources are listed in THIRD_PARTY_NOTICES.md.",
+  "home": [
+    {"d": "M3 10.2 L12 3 L21 10.2 V19.5 A1.5 1.5 0 0 1 19.5 21 H4.5 A1.5 1.5 0 0 1 3 19.5 Z", "mode": "stroke"},
+    {"d": "M9.5 21 V15.5 A2.5 2.5 0 0 1 14.5 15.5 V21", "mode": "stroke"}
+  ],
+  "homeFill": [
+    {"d": "M3 10.2 L12 3 L21 10.2 V19.5 A1.5 1.5 0 0 1 19.5 21 H4.5 A1.5 1.5 0 0 1 3 19.5 Z", "mode": "fillAndStroke"},
+    {"d": "M9.5 22.5 V15.5 A2.5 2.5 0 0 1 14.5 15.5 V22.5 Z", "mode": "clearFill"}
+  ],
+  "search": [
+    {"svg": "search.svg", "mode": "stroke"}
+  ],
+  "searchBold": {
+    "layers": [
+      {"svg": "search.svg", "mode": "stroke"}
+    ],
+    "strokeWidth": 2.75
+  },
+  "bell": [
+    {"svg": "bell.svg", "mode": "stroke"}
+  ],
+  "bellFill": {
+    "layers": [
+      {"d": "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326", "mode": "fillAndStroke"},
+      {"d": "M10.268 21a2 2 0 0 0 3.464 0", "mode": "stroke"}
+    ],
+    "source": "bell.svg"
+  },
+  "message": [
+    {"svg": "message-circle.svg", "mode": "stroke"}
+  ],
+  "messageFill": [
+    {"svg": "message-circle.svg", "mode": "fillAndStroke"}
+  ],
+  "reply": [
+    {"svg": "message-circle.svg", "mode": "stroke"}
+  ],
+  "repost": [
+    {"svg": "repeat-2.svg", "mode": "stroke"}
+  ],
+  "heart": [
+    {"svg": "heart.svg", "mode": "stroke"}
+  ],
+  "heartFill": [
+    {"svg": "heart.svg", "mode": "fillAndStroke"}
+  ],
+  "views": [
+    {"shapes": [
+      {"type": "line", "x1": 5, "y1": 20, "x2": 5, "y2": 14},
+      {"type": "line", "x1": 10, "y1": 20, "x2": 10, "y2": 4},
+      {"type": "line", "x1": 15, "y1": 20, "x2": 15, "y2": 11},
+      {"type": "line", "x1": 20, "y1": 20, "x2": 20, "y2": 8}
+    ], "mode": "stroke"}
+  ],
+  "bookmark": [
+    {"svg": "bookmark.svg", "mode": "stroke"}
+  ],
+  "bookmarkFill": [
+    {"svg": "bookmark.svg", "mode": "fillAndStroke"}
+  ],
+  "share": [
+    {"svg": "share-2.svg", "mode": "stroke"}
+  ],
+  "overflow": [
+    {"shapes": [
+      {"type": "circle", "cx": 12, "cy": 5, "r": 1.75},
+      {"type": "circle", "cx": 12, "cy": 12, "r": 1.75},
+      {"type": "circle", "cx": 12, "cy": 19, "r": 1.75}
+    ], "mode": "fill"}
+  ],
+  "more": [
+    {"shapes": [
+      {"type": "circle", "cx": 5, "cy": 12, "r": 1.75},
+      {"type": "circle", "cx": 12, "cy": 12, "r": 1.75},
+      {"type": "circle", "cx": 19, "cy": 12, "r": 1.75}
+    ], "mode": "fill"}
+  ],
+  "verified": {
+    "layers": [
+      {"d": "M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z", "mode": "fillAndStroke"},
+      {"d": "m16 9-5.5 5.5L8 12", "mode": "clearStroke"}
+    ],
+    "source": "badge-check.svg"
+  },
+  "logo": [
+    {"shapes": [{"type": "polygon", "points": "3,2.5 8.2,2.5 21,21.5 15.8,21.5"}], "mode": "fill"},
+    {"shapes": [{"type": "polygon", "points": "19.2,2.5 21,2.5 4.8,21.5 3,21.5"}], "mode": "fill"}
+  ],
+  "plus": [
+    {"svg": "plus.svg", "mode": "stroke"}
+  ],
+  "close": [
+    {"svg": "x.svg", "mode": "stroke"}
+  ],
+  "back": [
+    {"svg": "arrow-left.svg", "mode": "stroke"}
+  ],
+  "chevronRight": [
+    {"svg": "chevron-right.svg", "mode": "stroke"}
+  ],
+  "chevronDown": [
+    {"svg": "chevron-down.svg", "mode": "stroke"}
+  ],
+  "settings": [
+    {"svg": "settings.svg", "mode": "stroke"}
+  ],
+  "person": [
+    {"svg": "user.svg", "mode": "stroke"}
+  ],
+  "personFill": [
+    {"svg": "user.svg", "mode": "fillAndStroke"}
+  ],
+  "userPlus": [
+    {"svg": "user-plus.svg", "mode": "stroke"}
+  ],
+  "userMinus": [
+    {"svg": "user-minus.svg", "mode": "stroke"}
+  ],
+  "history": [
+    {"svg": "rotate-ccw.svg", "mode": "stroke"},
+    {"d": "M12 7v5l4 2", "mode": "stroke"}
+  ],
+  "pin": [
+    {"svg": "pin.svg", "mode": "stroke"}
+  ],
+  "lock": [
+    {"svg": "lock.svg", "mode": "stroke"}
+  ],
+  "link": [
+    {"svg": "link.svg", "mode": "stroke"}
+  ],
+  "mapPin": [
+    {"svg": "map-pin.svg", "mode": "stroke"}
+  ],
+  "calendar": [
+    {"svg": "calendar-days.svg", "mode": "stroke"}
+  ],
+  "mail": [
+    {"svg": "mail.svg", "mode": "stroke"}
+  ],
+  "image": [
+    {"svg": "image.svg", "mode": "stroke"}
+  ],
+  "trash": [
+    {"svg": "trash.svg", "mode": "stroke"}
+  ],
+  "volumeOff": [
+    {"svg": "volume-x.svg", "mode": "stroke"}
+  ],
+  "ban": [
+    {"svg": "ban.svg", "mode": "stroke"}
+  ],
+  "flag": [
+    {"svg": "flag.svg", "mode": "stroke"}
+  ],
+  "copy": [
+    {"svg": "copy.svg", "mode": "stroke"}
+  ],
+  "external": [
+    {"svg": "external-link.svg", "mode": "stroke"}
+  ],
+  "sun": [
+    {"svg": "sun.svg", "mode": "stroke"}
+  ],
+  "moon": [
+    {"svg": "moon.svg", "mode": "stroke"}
+  ],
+  "pencil": [
+    {"svg": "pen-line.svg", "mode": "stroke"}
+  ],
+  "play": [
+    {"shapes": [{"type": "polygon", "points": "8,5 19,12 8,19"}], "mode": "fillAndStroke"}
+  ],
+  "refresh": [
+    {"svg": "rotate-cw.svg", "mode": "stroke"}
+  ],
+  "check": [
+    {"svg": "check.svg", "mode": "stroke"}
+  ],
+  "star": [
+    {"svg": "star.svg", "mode": "fillAndStroke"}
+  ],
+  "alert": [
+    {"svg": "triangle.svg", "mode": "stroke"},
+    {"d": "M12 9v4", "mode": "stroke"},
+    {"d": "M12 17h.01", "mode": "stroke"}
+  ],
+  "info": [
+    {"svg": "info.svg", "mode": "stroke"}
+  ],
+  "trending": [
+    {"svg": "trending-up.svg", "mode": "stroke"}
+  ],
+  "at": [
+    {"svg": "at-sign.svg", "mode": "stroke"}
+  ],
+  "send": [
+    {"svg": "send.svg", "mode": "stroke"}
+  ]
+}

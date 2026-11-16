@@ -1,0 +1,345 @@
+{
+ "data": {
+  "explore_page": {
+   "id": "ExplorePageProduct-Page",
+   "body": {
+    "__typename": "SegmentedTimelines",
+    "initialTimeline": {
+     "id": "for_you",
+     "labelText": "話題を検索",
+     "refreshIntervalSec": 1200,
+     "timeline": {
+      "timeline": {
+       "instructions": [
+        {
+         "type": "TimelineClearCache"
+        },
+        {
+         "type": "TimelineAddEntries",
+         "entries": [
+          {
+           "entryId": "eventsummary-1",
+           "sortIndex": "999986",
+           "content": {
+            "entryType": "TimelineTimelineItem",
+            "__typename": "TimelineTimelineItem",
+            "itemContent": {
+             "itemType": "TimelineEventSummary",
+             "__typename": "TimelineEventSummary",
+             "title": "Ad event",
+             "promotedMetadata": {}
+            }
+           }
+          },
+          {
+           "entryId": "stories-2000000000000000041",
+           "sortIndex": "999973",
+           "content": {
+            "entryType": "TimelineTimelineModule",
+            "__typename": "TimelineTimelineModule",
+            "displayType": "Vertical",
+            "items": [
+             {
+              "entryId": "stories-2000000000000000041-trend-1",
+              "item": {
+               "itemContent": {
+                "__typename": "TimelineTrend",
+                "itemType": "TimelineTrend",
+                "name": "A news trend",
+                "is_ai_trend": true,
+                "social_context": {
+                 "contextType": "Facepile",
+                 "text": "3時間前 · テスト分野 · 42件のポスト",
+                 "type": "TimelineGeneralContext"
+                },
+                "trend_metadata": {
+                 "url": {
+                  "url": "twitter://trending/2000000000000000042",
+                  "urlType": "DeepLink"
+                 }
+                },
+                "trend_url": {
+                 "url": "twitter://trending/2000000000000000042",
+                 "urlType": "DeepLink"
+                }
+               }
+              }
+             }
+            ],
+            "header": {
+             "displayType": "Classic",
+             "sticky": false,
+             "text": "本日のニュース"
+            }
+           }
+          },
+          {
+           "entryId": "trend-search-1",
+           "sortIndex": "999986",
+           "content": {
+            "entryType": "TimelineTimelineItem",
+            "__typename": "TimelineTimelineItem",
+            "itemContent": {
+             "__typename": "TimelineTrend",
+             "itemType": "TimelineTrend",
+             "name": "#Hashtag topic",
+             "trend_metadata": {
+              "domain_context": "日本のトレンド",
+              "meta_description": "1.2万件のポスト",
+              "url": {
+               "url": "twitter://search/?query=%23Hashtag%20topic&src=trend_click",
+               "urlType": "DeepLink"
+              }
+             },
+             "trend_url": {
+              "url": "twitter://search/?query=%23Hashtag%20topic&src=trend_click",
+              "urlType": "DeepLink"
+             }
+            }
+           }
+          },
+          {
+           "entryId": "who-to-follow-2000000000000000043",
+           "sortIndex": "999967",
+           "content": {
+            "entryType": "TimelineTimelineModule",
+            "__typename": "TimelineTimelineModule",
+            "displayType": "Vertical",
+            "items": [
+             {
+              "entryId": "who-to-follow-2000000000000000043-user-1000000000000000002",
+              "item": {
+               "itemContent": {
+                "itemType": "TimelineUser",
+                "__typename": "TimelineUser",
+                "user_results": {
+                 "result": {
+                  "__typename": "User",
+                  "rest_id": "1000000000000000002",
+                  "core": {
+                   "name": "Bob Sample",
+                   "screen_name": "bob_sample",
+                   "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                  },
+                  "avatar": {
+                   "image_url": "https://pbs.twimg.com/profile_images/1/bob_sample_normal.jpg"
+                  },
+                  "is_blue_verified": false,
+                  "verification": {
+                   "verified": false
+                  },
+                  "profile_image_shape": "Circle",
+                  "privacy": {
+                   "protected": false
+                  },
+                  "relationship_perspectives": {
+                   "following": false,
+                   "followed_by": false,
+                   "blocking": false,
+                   "blocked_by": false,
+                   "muting": false
+                  },
+                  "follow_request_sent": false,
+                  "relationship_counts": {
+                   "followers": 10,
+                   "following": 5
+                  },
+                  "tweet_counts": {
+                   "tweets": 20,
+                   "media_tweets": 3
+                  },
+                  "action_counts": {
+                   "favorites_count": 7
+                  },
+                  "profile_bio": {
+                   "description": "Hello from Bob Sample",
+                   "entities": {
+                    "description": {}
+                   }
+                  },
+                  "location": {
+                   "location": "Tokyo"
+                  },
+                  "pinned_items": {},
+                  "affiliates_highlighted_label": {}
+                 }
+                }
+               }
+              }
+             }
+            ],
+            "header": {
+             "displayType": "Classic",
+             "text": "おすすめユーザー"
+            }
+           }
+          },
+          {
+           "entryId": "tweet-2000000000000000044",
+           "sortIndex": "999975",
+           "content": {
+            "entryType": "TimelineTimelineModule",
+            "__typename": "TimelineTimelineModule",
+            "displayType": "Vertical",
+            "items": [
+             {
+              "entryId": "tweet-2000000000000000044-tweet-2000000000000000045",
+              "item": {
+               "itemContent": {
+                "itemType": "TimelineTweet",
+                "__typename": "TimelineTweet",
+                "tweetDisplayType": "Tweet",
+                "tweet_results": {
+                 "result": {
+                  "__typename": "Tweet",
+                  "rest_id": "2000000000000000045",
+                  "core": {
+                   "user_results": {
+                    "result": {
+                     "__typename": "User",
+                     "rest_id": "1000000000000000003",
+                     "core": {
+                      "name": "Carol Test",
+                      "screen_name": "carol_test",
+                      "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                     },
+                     "avatar": {
+                      "image_url": "https://pbs.twimg.com/profile_images/1/carol_test_normal.jpg"
+                     },
+                     "is_blue_verified": false,
+                     "verification": {
+                      "verified": false
+                     },
+                     "profile_image_shape": "Circle",
+                     "privacy": {
+                      "protected": false
+                     },
+                     "relationship_perspectives": {
+                      "following": false,
+                      "followed_by": false,
+                      "blocking": false,
+                      "blocked_by": false,
+                      "muting": false
+                     },
+                     "follow_request_sent": false,
+                     "relationship_counts": {
+                      "followers": 10,
+                      "following": 5
+                     },
+                     "tweet_counts": {
+                      "tweets": 20,
+                      "media_tweets": 3
+                     },
+                     "action_counts": {
+                      "favorites_count": 7
+                     },
+                     "profile_bio": {
+                      "description": "Hello from Carol Test",
+                      "entities": {
+                       "description": {}
+                      }
+                     },
+                     "location": {
+                      "location": "Tokyo"
+                     },
+                     "pinned_items": {},
+                     "affiliates_highlighted_label": {}
+                    }
+                   }
+                  },
+                  "legacy": {
+                   "full_text": "Popular post in explore",
+                   "display_text_range": [
+                    0,
+                    23
+                   ],
+                   "entities": {
+                    "urls": [],
+                    "user_mentions": [],
+                    "hashtags": [],
+                    "symbols": [],
+                    "media": []
+                   },
+                   "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+                   "conversation_id_str": "2000000000000000001",
+                   "favorite_count": 1,
+                   "retweet_count": 2,
+                   "reply_count": 3,
+                   "quote_count": 4,
+                   "bookmark_count": 5,
+                   "favorited": false,
+                   "retweeted": false,
+                   "bookmarked": false,
+                   "lang": "en",
+                   "possibly_sensitive": false,
+                   "is_quote_status": false
+                  },
+                  "views": {
+                   "count": "1200",
+                   "state": "EnabledWithCount"
+                  }
+                 }
+                }
+               }
+              }
+             }
+            ],
+            "header": {
+             "displayType": "Classic",
+             "text": "おすすめ投稿"
+            }
+           }
+          },
+          {
+           "entryId": "cursor-top-explore",
+           "sortIndex": "999982",
+           "content": {
+            "entryType": "TimelineTimelineCursor",
+            "__typename": "TimelineTimelineCursor",
+            "cursorType": "Top",
+            "value": "EXPLORE-TOP"
+           }
+          },
+          {
+           "entryId": "cursor-bottom-explore",
+           "sortIndex": "999979",
+           "content": {
+            "entryType": "TimelineTimelineCursor",
+            "__typename": "TimelineTimelineCursor",
+            "cursorType": "Bottom",
+            "value": "EXPLORE-BOTTOM"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "timelines": [
+     {
+      "id": "for_you",
+      "labelText": "話題を検索",
+      "timeline": {
+       "id": "VGltZWxpbmU6MQ=="
+      }
+     },
+     {
+      "id": "trending",
+      "labelText": "トレンド",
+      "timeline": {
+       "id": "VGltZWxpbmU6Mg=="
+      }
+     },
+     {
+      "id": "news",
+      "labelText": "ニュース",
+      "timeline": {
+       "id": "VGltZWxpbmU6Mw=="
+      }
+     }
+    ]
+   }
+  }
+ }
+}

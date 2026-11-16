@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100002",
+    "name": "佐藤 花子",
+    "handle": "hanako_sato_demo",
+    "avatar": "demo://avatar/100002",
+    "verified": "blue",
+    "square": false,
+    "protected": false,
+    "following": true,
+    "followed_by": true,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100002",
+    "bio": "絵と写真を投稿しています。お仕事のご依頼はDMでお願いします（デモ）。",
+    "bio_entities": [],
+    "location": "神奈川県",
+    "url": null,
+    "joined": 1560000000,
+    "followers": 8393,
+    "friends": 512,
+    "tweets": 2310,
+    "media_count": 1480,
+    "likes_count": 6120,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

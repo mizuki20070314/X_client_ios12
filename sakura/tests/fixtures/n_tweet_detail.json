@@ -1,0 +1,818 @@
+{
+ "data": {
+  "threaded_conversation_with_injections_v2": {
+   "instructions": [
+    {
+     "type": "TimelineClearCache"
+    },
+    {
+     "type": "TimelineAddEntries",
+     "entries": [
+      {
+       "entryId": "tweet-2000000000000000021",
+       "sortIndex": "999975",
+       "content": {
+        "entryType": "TimelineTimelineItem",
+        "__typename": "TimelineTimelineItem",
+        "itemContent": {
+         "itemType": "TimelineTweet",
+         "__typename": "TimelineTweet",
+         "tweetDisplayType": "Tweet",
+         "tweet_results": {
+          "result": {
+           "__typename": "Tweet",
+           "rest_id": "2000000000000000021",
+           "core": {
+            "user_results": {
+             "result": {
+              "__typename": "User",
+              "rest_id": "1000000000000000002",
+              "core": {
+               "name": "Bob Sample",
+               "screen_name": "bob_sample",
+               "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+              },
+              "avatar": {
+               "image_url": "https://pbs.twimg.com/profile_images/1/bob_sample_normal.jpg"
+              },
+              "is_blue_verified": false,
+              "verification": {
+               "verified": false
+              },
+              "profile_image_shape": "Circle",
+              "privacy": {
+               "protected": false
+              },
+              "relationship_perspectives": {
+               "following": false,
+               "followed_by": false,
+               "blocking": false,
+               "blocked_by": false,
+               "muting": false
+              },
+              "follow_request_sent": false,
+              "relationship_counts": {
+               "followers": 10,
+               "following": 5
+              },
+              "tweet_counts": {
+               "tweets": 20,
+               "media_tweets": 3
+              },
+              "action_counts": {
+               "favorites_count": 7
+              },
+              "profile_bio": {
+               "description": "Hello from Bob Sample",
+               "entities": {
+                "description": {}
+               }
+              },
+              "location": {
+               "location": "Tokyo"
+              },
+              "pinned_items": {},
+              "affiliates_highlighted_label": {}
+             }
+            }
+           },
+           "legacy": {
+            "full_text": "Ancestor one: is it true?",
+            "display_text_range": [
+             0,
+             25
+            ],
+            "entities": {
+             "urls": [],
+             "user_mentions": [],
+             "hashtags": [],
+             "symbols": [],
+             "media": []
+            },
+            "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+            "conversation_id_str": "2000000000000000001",
+            "favorite_count": 1,
+            "retweet_count": 2,
+            "reply_count": 3,
+            "quote_count": 4,
+            "bookmark_count": 5,
+            "favorited": false,
+            "retweeted": false,
+            "bookmarked": false,
+            "lang": "en",
+            "possibly_sensitive": false,
+            "is_quote_status": false
+           },
+           "views": {
+            "count": "1200",
+            "state": "EnabledWithCount"
+           }
+          }
+         }
+        }
+       }
+      },
+      {
+       "entryId": "tweet-2000000000000000021b",
+       "sortIndex": "999974",
+       "content": {
+        "entryType": "TimelineTimelineItem",
+        "__typename": "TimelineTimelineItem",
+        "itemContent": {
+         "itemType": "TimelineTweet",
+         "__typename": "TimelineTweet",
+         "tweetDisplayType": "Tweet",
+         "tweet_results": {
+          "result": {
+           "__typename": "TweetTombstone",
+           "tombstone": {
+            "text": {
+             "text": "このポストは削除されました。"
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      {
+       "entryId": "tweet-2000000000000000022",
+       "sortIndex": "999975",
+       "content": {
+        "entryType": "TimelineTimelineItem",
+        "__typename": "TimelineTimelineItem",
+        "itemContent": {
+         "itemType": "TimelineTweet",
+         "__typename": "TimelineTweet",
+         "tweetDisplayType": "Tweet",
+         "tweet_results": {
+          "result": {
+           "__typename": "Tweet",
+           "rest_id": "2000000000000000022",
+           "core": {
+            "user_results": {
+             "result": {
+              "__typename": "User",
+              "rest_id": "1000000000000000001",
+              "core": {
+               "name": "Alice Example",
+               "screen_name": "alice_example",
+               "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+              },
+              "avatar": {
+               "image_url": "https://pbs.twimg.com/profile_images/1/alice_example_normal.jpg"
+              },
+              "is_blue_verified": false,
+              "verification": {
+               "verified": false
+              },
+              "profile_image_shape": "Circle",
+              "privacy": {
+               "protected": false
+              },
+              "relationship_perspectives": {
+               "following": false,
+               "followed_by": false,
+               "blocking": false,
+               "blocked_by": false,
+               "muting": false
+              },
+              "follow_request_sent": false,
+              "relationship_counts": {
+               "followers": 10,
+               "following": 5
+              },
+              "tweet_counts": {
+               "tweets": 20,
+               "media_tweets": 3
+              },
+              "action_counts": {
+               "favorites_count": 7
+              },
+              "profile_bio": {
+               "description": "Hello from Alice Example",
+               "entities": {
+                "description": {}
+               }
+              },
+              "location": {
+               "location": "Tokyo"
+              },
+              "pinned_items": {},
+              "affiliates_highlighted_label": {}
+             }
+            }
+           },
+           "legacy": {
+            "full_text": "The focal post 🙂 with a link https://t.co/FFFFFFFFFF",
+            "display_text_range": [
+             0,
+             52
+            ],
+            "entities": {
+             "urls": [
+              {
+               "indices": [
+                29,
+                52
+               ],
+               "url": "https://t.co/FFFFFFFFFF",
+               "display_url": "example.com/focal",
+               "expanded_url": "https://example.com/focal"
+              }
+             ]
+            },
+            "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+            "conversation_id_str": "2000000000000000001",
+            "favorite_count": 1,
+            "retweet_count": 2,
+            "reply_count": 3,
+            "quote_count": 4,
+            "bookmark_count": 5,
+            "favorited": false,
+            "retweeted": false,
+            "bookmarked": false,
+            "lang": "en",
+            "possibly_sensitive": false,
+            "is_quote_status": false
+           },
+           "views": {
+            "count": "1200",
+            "state": "EnabledWithCount"
+           }
+          }
+         }
+        }
+       }
+      },
+      {
+       "entryId": "conversationthread-2000000000000000028",
+       "sortIndex": "999962",
+       "content": {
+        "entryType": "TimelineTimelineModule",
+        "__typename": "TimelineTimelineModule",
+        "displayType": "VerticalConversation",
+        "items": [
+         {
+          "entryId": "conversationthread-2000000000000000028-tweet-2000000000000000023",
+          "item": {
+           "itemContent": {
+            "itemType": "TimelineTweet",
+            "__typename": "TimelineTweet",
+            "tweetDisplayType": "Tweet",
+            "tweet_results": {
+             "result": {
+              "__typename": "Tweet",
+              "rest_id": "2000000000000000023",
+              "core": {
+               "user_results": {
+                "result": {
+                 "__typename": "User",
+                 "rest_id": "1000000000000000003",
+                 "core": {
+                  "name": "Carol Test",
+                  "screen_name": "carol_test",
+                  "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                 },
+                 "avatar": {
+                  "image_url": "https://pbs.twimg.com/profile_images/1/carol_test_normal.jpg"
+                 },
+                 "is_blue_verified": false,
+                 "verification": {
+                  "verified": false
+                 },
+                 "profile_image_shape": "Circle",
+                 "privacy": {
+                  "protected": false
+                 },
+                 "relationship_perspectives": {
+                  "following": false,
+                  "followed_by": false,
+                  "blocking": false,
+                  "blocked_by": false,
+                  "muting": false
+                 },
+                 "follow_request_sent": false,
+                 "relationship_counts": {
+                  "followers": 10,
+                  "following": 5
+                 },
+                 "tweet_counts": {
+                  "tweets": 20,
+                  "media_tweets": 3
+                 },
+                 "action_counts": {
+                  "favorites_count": 7
+                 },
+                 "profile_bio": {
+                  "description": "Hello from Carol Test",
+                  "entities": {
+                   "description": {}
+                  }
+                 },
+                 "location": {
+                  "location": "Tokyo"
+                 },
+                 "pinned_items": {},
+                 "affiliates_highlighted_label": {}
+                }
+               }
+              },
+              "legacy": {
+               "full_text": "thread reply one",
+               "display_text_range": [
+                0,
+                16
+               ],
+               "entities": {
+                "urls": [],
+                "user_mentions": [],
+                "hashtags": [],
+                "symbols": [],
+                "media": []
+               },
+               "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+               "conversation_id_str": "2000000000000000001",
+               "favorite_count": 1,
+               "retweet_count": 2,
+               "reply_count": 3,
+               "quote_count": 4,
+               "bookmark_count": 5,
+               "favorited": false,
+               "retweeted": false,
+               "bookmarked": false,
+               "lang": "en",
+               "possibly_sensitive": false,
+               "is_quote_status": false
+              },
+              "views": {
+               "count": "1200",
+               "state": "EnabledWithCount"
+              }
+             }
+            }
+           }
+          }
+         },
+         {
+          "entryId": "conversationthread-2000000000000000028-tweet-2000000000000000024",
+          "item": {
+           "itemContent": {
+            "itemType": "TimelineTweet",
+            "__typename": "TimelineTweet",
+            "tweetDisplayType": "Tweet",
+            "tweet_results": {
+             "result": {
+              "__typename": "Tweet",
+              "rest_id": "2000000000000000024",
+              "core": {
+               "user_results": {
+                "result": {
+                 "__typename": "User",
+                 "rest_id": "1000000000000000004",
+                 "core": {
+                  "name": "Dave Demo",
+                  "screen_name": "dave_demo",
+                  "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                 },
+                 "avatar": {
+                  "image_url": "https://pbs.twimg.com/profile_images/1/dave_demo_normal.jpg"
+                 },
+                 "is_blue_verified": false,
+                 "verification": {
+                  "verified": false
+                 },
+                 "profile_image_shape": "Circle",
+                 "privacy": {
+                  "protected": false
+                 },
+                 "relationship_perspectives": {
+                  "following": false,
+                  "followed_by": false,
+                  "blocking": false,
+                  "blocked_by": false,
+                  "muting": false
+                 },
+                 "follow_request_sent": false,
+                 "relationship_counts": {
+                  "followers": 10,
+                  "following": 5
+                 },
+                 "tweet_counts": {
+                  "tweets": 20,
+                  "media_tweets": 3
+                 },
+                 "action_counts": {
+                  "favorites_count": 7
+                 },
+                 "profile_bio": {
+                  "description": "Hello from Dave Demo",
+                  "entities": {
+                   "description": {}
+                  }
+                 },
+                 "location": {
+                  "location": "Tokyo"
+                 },
+                 "pinned_items": {},
+                 "affiliates_highlighted_label": {}
+                }
+               }
+              },
+              "legacy": {
+               "full_text": "thread reply two",
+               "display_text_range": [
+                0,
+                16
+               ],
+               "entities": {
+                "urls": [],
+                "user_mentions": [],
+                "hashtags": [],
+                "symbols": [],
+                "media": []
+               },
+               "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+               "conversation_id_str": "2000000000000000001",
+               "favorite_count": 1,
+               "retweet_count": 2,
+               "reply_count": 3,
+               "quote_count": 4,
+               "bookmark_count": 5,
+               "favorited": false,
+               "retweeted": false,
+               "bookmarked": false,
+               "lang": "en",
+               "possibly_sensitive": false,
+               "is_quote_status": false
+              },
+              "views": {
+               "count": "1200",
+               "state": "EnabledWithCount"
+              }
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      },
+      {
+       "entryId": "conversationthread-2000000000000000029",
+       "sortIndex": "999962",
+       "content": {
+        "entryType": "TimelineTimelineModule",
+        "__typename": "TimelineTimelineModule",
+        "displayType": "VerticalConversation",
+        "items": [
+         {
+          "entryId": "conversationthread-2000000000000000029-tweet-2000000000000000025",
+          "item": {
+           "itemContent": {
+            "itemType": "TimelineTweet",
+            "__typename": "TimelineTweet",
+            "tweetDisplayType": "Tweet",
+            "tweet_results": {
+             "result": {
+              "__typename": "Tweet",
+              "rest_id": "2000000000000000025",
+              "core": {
+               "user_results": {
+                "result": {
+                 "__typename": "User",
+                 "rest_id": "1000000000000000002",
+                 "core": {
+                  "name": "Bob Sample",
+                  "screen_name": "bob_sample",
+                  "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                 },
+                 "avatar": {
+                  "image_url": "https://pbs.twimg.com/profile_images/1/bob_sample_normal.jpg"
+                 },
+                 "is_blue_verified": false,
+                 "verification": {
+                  "verified": false
+                 },
+                 "profile_image_shape": "Circle",
+                 "privacy": {
+                  "protected": false
+                 },
+                 "relationship_perspectives": {
+                  "following": false,
+                  "followed_by": false,
+                  "blocking": false,
+                  "blocked_by": false,
+                  "muting": false
+                 },
+                 "follow_request_sent": false,
+                 "relationship_counts": {
+                  "followers": 10,
+                  "following": 5
+                 },
+                 "tweet_counts": {
+                  "tweets": 20,
+                  "media_tweets": 3
+                 },
+                 "action_counts": {
+                  "favorites_count": 7
+                 },
+                 "profile_bio": {
+                  "description": "Hello from Bob Sample",
+                  "entities": {
+                   "description": {}
+                  }
+                 },
+                 "location": {
+                  "location": "Tokyo"
+                 },
+                 "pinned_items": {},
+                 "affiliates_highlighted_label": {}
+                }
+               }
+              },
+              "legacy": {
+               "full_text": "single reply",
+               "display_text_range": [
+                0,
+                12
+               ],
+               "entities": {
+                "urls": [],
+                "user_mentions": [],
+                "hashtags": [],
+                "symbols": [],
+                "media": []
+               },
+               "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+               "conversation_id_str": "2000000000000000001",
+               "favorite_count": 1,
+               "retweet_count": 2,
+               "reply_count": 3,
+               "quote_count": 4,
+               "bookmark_count": 5,
+               "favorited": false,
+               "retweeted": false,
+               "bookmarked": false,
+               "lang": "en",
+               "possibly_sensitive": false,
+               "is_quote_status": false
+              },
+              "views": {
+               "count": "1200",
+               "state": "EnabledWithCount"
+              }
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      },
+      {
+       "entryId": "tweetdetailrelatedtweets-2000000000000000030",
+       "sortIndex": "999956",
+       "content": {
+        "entryType": "TimelineTimelineModule",
+        "__typename": "TimelineTimelineModule",
+        "displayType": "Vertical",
+        "items": [
+         {
+          "entryId": "tweetdetailrelatedtweets-2000000000000000030-tweet-2000000000000000026",
+          "item": {
+           "itemContent": {
+            "itemType": "TimelineTweet",
+            "__typename": "TimelineTweet",
+            "tweetDisplayType": "Tweet",
+            "tweet_results": {
+             "result": {
+              "__typename": "Tweet",
+              "rest_id": "2000000000000000026",
+              "core": {
+               "user_results": {
+                "result": {
+                 "__typename": "User",
+                 "rest_id": "1000000000000000003",
+                 "core": {
+                  "name": "Carol Test",
+                  "screen_name": "carol_test",
+                  "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                 },
+                 "avatar": {
+                  "image_url": "https://pbs.twimg.com/profile_images/1/carol_test_normal.jpg"
+                 },
+                 "is_blue_verified": false,
+                 "verification": {
+                  "verified": false
+                 },
+                 "profile_image_shape": "Circle",
+                 "privacy": {
+                  "protected": false
+                 },
+                 "relationship_perspectives": {
+                  "following": false,
+                  "followed_by": false,
+                  "blocking": false,
+                  "blocked_by": false,
+                  "muting": false
+                 },
+                 "follow_request_sent": false,
+                 "relationship_counts": {
+                  "followers": 10,
+                  "following": 5
+                 },
+                 "tweet_counts": {
+                  "tweets": 20,
+                  "media_tweets": 3
+                 },
+                 "action_counts": {
+                  "favorites_count": 7
+                 },
+                 "profile_bio": {
+                  "description": "Hello from Carol Test",
+                  "entities": {
+                   "description": {}
+                  }
+                 },
+                 "location": {
+                  "location": "Tokyo"
+                 },
+                 "pinned_items": {},
+                 "affiliates_highlighted_label": {}
+                }
+               }
+              },
+              "legacy": {
+               "full_text": "related post one",
+               "display_text_range": [
+                0,
+                16
+               ],
+               "entities": {
+                "urls": [],
+                "user_mentions": [],
+                "hashtags": [],
+                "symbols": [],
+                "media": []
+               },
+               "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+               "conversation_id_str": "2000000000000000001",
+               "favorite_count": 1,
+               "retweet_count": 2,
+               "reply_count": 3,
+               "quote_count": 4,
+               "bookmark_count": 5,
+               "favorited": false,
+               "retweeted": false,
+               "bookmarked": false,
+               "lang": "en",
+               "possibly_sensitive": false,
+               "is_quote_status": false
+              },
+              "views": {
+               "count": "1200",
+               "state": "EnabledWithCount"
+              }
+             }
+            }
+           }
+          }
+         },
+         {
+          "entryId": "tweetdetailrelatedtweets-2000000000000000030-tweet-2000000000000000027",
+          "item": {
+           "itemContent": {
+            "itemType": "TimelineTweet",
+            "__typename": "TimelineTweet",
+            "tweetDisplayType": "Tweet",
+            "tweet_results": {
+             "result": {
+              "__typename": "Tweet",
+              "rest_id": "2000000000000000027",
+              "core": {
+               "user_results": {
+                "result": {
+                 "__typename": "User",
+                 "rest_id": "1000000000000000004",
+                 "core": {
+                  "name": "Dave Demo",
+                  "screen_name": "dave_demo",
+                  "created_at": "Tue Mar 04 10:00:00 +0000 2014"
+                 },
+                 "avatar": {
+                  "image_url": "https://pbs.twimg.com/profile_images/1/dave_demo_normal.jpg"
+                 },
+                 "is_blue_verified": false,
+                 "verification": {
+                  "verified": false
+                 },
+                 "profile_image_shape": "Circle",
+                 "privacy": {
+                  "protected": false
+                 },
+                 "relationship_perspectives": {
+                  "following": false,
+                  "followed_by": false,
+                  "blocking": false,
+                  "blocked_by": false,
+                  "muting": false
+                 },
+                 "follow_request_sent": false,
+                 "relationship_counts": {
+                  "followers": 10,
+                  "following": 5
+                 },
+                 "tweet_counts": {
+                  "tweets": 20,
+                  "media_tweets": 3
+                 },
+                 "action_counts": {
+                  "favorites_count": 7
+                 },
+                 "profile_bio": {
+                  "description": "Hello from Dave Demo",
+                  "entities": {
+                   "description": {}
+                  }
+                 },
+                 "location": {
+                  "location": "Tokyo"
+                 },
+                 "pinned_items": {},
+                 "affiliates_highlighted_label": {}
+                }
+               }
+              },
+              "legacy": {
+               "full_text": "related post two",
+               "display_text_range": [
+                0,
+                16
+               ],
+               "entities": {
+                "urls": [],
+                "user_mentions": [],
+                "hashtags": [],
+                "symbols": [],
+                "media": []
+               },
+               "created_at": "Mon Nov 16 06:48:58 +0000 2026",
+               "conversation_id_str": "2000000000000000001",
+               "favorite_count": 1,
+               "retweet_count": 2,
+               "reply_count": 3,
+               "quote_count": 4,
+               "bookmark_count": 5,
+               "favorited": false,
+               "retweeted": false,
+               "bookmarked": false,
+               "lang": "en",
+               "possibly_sensitive": false,
+               "is_quote_status": false
+              },
+              "views": {
+               "count": "1200",
+               "state": "EnabledWithCount"
+              }
+             }
+            }
+           }
+          }
+         }
+        ],
+        "header": {
+         "displayType": "Classic",
+         "sticky": true,
+         "text": "もっと見つける",
+         "socialContext": {
+          "contextType": "TextOnly",
+          "text": "Xから",
+          "type": "TimelineGeneralContext"
+         }
+        }
+       }
+      },
+      {
+       "entryId": "cursor-showmorethreads-2000000000000000031",
+       "sortIndex": "999958",
+       "content": {
+        "entryType": "TimelineTimelineCursor",
+        "__typename": "TimelineTimelineCursor",
+        "cursorType": "ShowMoreThreads",
+        "value": "SHOW-MORE-1",
+        "displayTreatment": {
+         "actionText": "スパムの可能性がある返信を表示"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "type": "TimelineTerminateTimeline",
+     "direction": "Top"
+    }
+   ]
+  }
+ }
+}

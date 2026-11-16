@@ -1,0 +1,53 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100001",
+    "name": "山田 太郎",
+    "handle": "yamada_demo",
+    "avatar": "demo://avatar/100001",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": false,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100001",
+    "bio": "週末は写真、平日はコードを書いています。 写真の先生は @hanako_sato_demo さんです。 #写真部",
+    "bio_entities": [
+      {
+        "s": 28,
+        "e": 45,
+        "k": "mention",
+        "v": "hanako_sato_demo"
+      },
+      {
+        "s": 52,
+        "e": 56,
+        "k": "hashtag",
+        "v": "写真部"
+      }
+    ],
+    "location": "東京",
+    "url": {
+      "display": "example.com/yamada",
+      "expanded": "https://example.com/yamada"
+    },
+    "joined": 1652972380,
+    "followers": 1234,
+    "friends": 321,
+    "tweets": 4567,
+    "media_count": 210,
+    "likes_count": 890,
+    "pinned_ids": [
+      "2122000000000000051"
+    ],
+    "blocked_by": false,
+    "follow_request_sent": false
+  },
+  "badges": {
+    "notifications": 5,
+    "messages": 0
+  }
+}

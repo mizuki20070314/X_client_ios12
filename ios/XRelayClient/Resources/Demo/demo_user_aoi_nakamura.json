@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100007",
+    "name": "中村 葵",
+    "handle": "aoi_nakamura",
+    "avatar": "demo://avatar/100007",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": true,
+    "followed_by": true,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100007",
+    "bio": "カフェ巡りとスイーツ🍰",
+    "bio_entities": [],
+    "location": "東京都",
+    "url": null,
+    "joined": 1580000000,
+    "followers": 3050,
+    "friends": 610,
+    "tweets": 7420,
+    "media_count": 1100,
+    "likes_count": 9870,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

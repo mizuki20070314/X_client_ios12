@@ -1,0 +1,34 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100004",
+    "name": "高橋 みさき",
+    "handle": "misaki_takahashi",
+    "avatar": "demo://avatar/100004",
+    "verified": "business",
+    "square": true,
+    "protected": false,
+    "following": true,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": {
+      "text": "サンプル株式会社",
+      "badge": "demo://avatar/900"
+    },
+    "banner": "demo://banner/100004",
+    "bio": "架空の会社の広報担当です。",
+    "bio_entities": [],
+    "location": "大阪府",
+    "url": null,
+    "joined": 1500000000,
+    "followers": 15230,
+    "friends": 180,
+    "tweets": 5600,
+    "media_count": 640,
+    "likes_count": 3300,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

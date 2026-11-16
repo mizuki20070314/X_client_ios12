@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100012",
+    "name": "井上 海斗",
+    "handle": "kaito_inoue",
+    "avatar": "demo://avatar/100012",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": true,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100012",
+    "bio": "英語の投稿も少しします。",
+    "bio_entities": [],
+    "location": "Tokyo",
+    "url": null,
+    "joined": 1570000000,
+    "followers": 301,
+    "friends": 290,
+    "tweets": 1560,
+    "media_count": 44,
+    "likes_count": 880,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

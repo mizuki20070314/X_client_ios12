@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100016",
+    "name": "アンケート係",
+    "handle": "poll_keeper_demo",
+    "avatar": "demo://avatar/100016",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": false,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100016",
+    "bio": "週末のアンケートを出しています。",
+    "bio_entities": [],
+    "location": "",
+    "url": null,
+    "joined": 1520000000,
+    "followers": 760,
+    "friends": 60,
+    "tweets": 900,
+    "media_count": 5,
+    "likes_count": 20,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

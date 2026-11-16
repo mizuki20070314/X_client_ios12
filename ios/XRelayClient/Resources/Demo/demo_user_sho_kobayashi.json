@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100008",
+    "name": "小林 翔",
+    "handle": "sho_kobayashi",
+    "avatar": "demo://avatar/100008",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": true,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100008",
+    "bio": "長い文章を書くのが好きです。",
+    "bio_entities": [],
+    "location": "福岡県",
+    "url": null,
+    "joined": 1540000000,
+    "followers": 432,
+    "friends": 201,
+    "tweets": 2990,
+    "media_count": 60,
+    "likes_count": 1230,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

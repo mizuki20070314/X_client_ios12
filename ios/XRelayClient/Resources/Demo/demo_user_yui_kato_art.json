@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100009",
+    "name": "加藤 ゆい",
+    "handle": "yui_kato_art",
+    "avatar": "demo://avatar/100009",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": true,
+    "followed_by": true,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100009",
+    "bio": "水彩画を描いています。",
+    "bio_entities": [],
+    "location": "東京都",
+    "url": null,
+    "joined": 1550000000,
+    "followers": 5120,
+    "friends": 260,
+    "tweets": 1870,
+    "media_count": 940,
+    "likes_count": 2750,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

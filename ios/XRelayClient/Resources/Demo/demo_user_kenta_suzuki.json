@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100003",
+    "name": "鈴木 健太",
+    "handle": "kenta_suzuki",
+    "avatar": "demo://avatar/100003",
+    "verified": null,
+    "square": false,
+    "protected": false,
+    "following": true,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100003",
+    "bio": "登山と天体観測。",
+    "bio_entities": [],
+    "location": "埼玉県",
+    "url": null,
+    "joined": 1600000000,
+    "followers": 212,
+    "friends": 340,
+    "tweets": 980,
+    "media_count": 75,
+    "likes_count": 410,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}

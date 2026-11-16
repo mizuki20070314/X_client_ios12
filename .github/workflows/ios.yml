@@ -6,24 +6,27 @@ on:
     paths:
       - "ios/**"
       - "sakura/**"
-      - "README.md"
+      - "tools/**"
       - ".github/workflows/ios.yml"
   pull_request:
     paths:
       - "ios/**"
       - "sakura/**"
-      - "README.md"
+      - "tools/**"
       - ".github/workflows/ios.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+env:
+  XCODE: /Applications/Xcode_16.4.app
+
 jobs:
   build-and-simulator-smoke-test:
     name: Build and simulator smoke test
-    runs-on: macos-latest
-    timeout-minutes: 20
+    runs-on: macos-15
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -36,20 +39,37 @@ jobs:
           python3 -m py_compile sakura/www/cgi-bin/xrelay.cgi sakura/setup_config.py
           python3 -m unittest discover -s sakura/tests -v
 
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+          echo "iphoneos SDK: $(xcrun --sdk iphoneos --show-sdk-version)"
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
       - name: Build for iOS Simulator
         run: |
           set -o pipefail
-          xcodebuild -version
           xcodebuild \
             -project ios/XRelayClient.xcodeproj \
             -scheme XRelayClient \
             -configuration Debug \
             -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
-            build | tee "$RUNNER_TEMP/xcodebuild.log"
+            build 2>&1 | tee "$RUNNER_TEMP/simulator-build.log"
 
-      - name: Build unsigned iOS app
+      - name: Show simulator compiler errors
+        if: failure()
+        run: grep -E "error:" "$RUNNER_TEMP/simulator-build.log" | sort -u | head -100 || true
+
+      - name: Build unsigned device app
         run: |
           set -o pipefail
           xcodebuild \
@@ -57,45 +77,67 @@ jobs:
             -scheme XRelayClient \
             -configuration Release \
             -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/DeviceDerivedData" \
-            CODE_SIGNING_ALLOWED=NO \
-            build | tee "$RUNNER_TEMP/device-build.log"
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee "$RUNNER_TEMP/device-build.log"
+
+      - name: Show device compiler errors
+        if: failure()
+        run: grep -E "error:" "$RUNNER_TEMP/device-build.log" | sort -u | head -100 || true
 
       - name: Package unsigned IPA
         run: |
           set -euo pipefail
           app_path="$RUNNER_TEMP/DeviceDerivedData/Build/Products/Release-iphoneos/XRelayClient.app"
           test -d "$app_path"
+          rm -rf "$RUNNER_TEMP/ipa"
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           cp -R "$app_path" "$RUNNER_TEMP/ipa/Payload/"
           (
             cd "$RUNNER_TEMP/ipa"
             /usr/bin/zip -qry "$RUNNER_TEMP/XRelayClient-unsigned.ipa" Payload
           )
-          unzip -Z1 "$RUNNER_TEMP/XRelayClient-unsigned.ipa" | grep -q '^Payload/XRelayClient.app/'
+          # grep -c reads the whole listing; grep -q would stop early and fail the pipe with SIGPIPE
+          test "$(unzip -Z1 "$RUNNER_TEMP/XRelayClient-unsigned.ipa" | grep -c '^Payload/XRelayClient\.app/')" -gt 0
 
-      - name: Boot simulator and launch app
-        run: |
-          set -euo pipefail
-          device_udid="$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/{print $2; exit}')"
-          test -n "$device_udid"
-          xcrun simctl boot "$device_udid" 2>/dev/null || true
-          xcrun simctl bootstatus "$device_udid" -b
-          app_path="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/XRelayClient.app"
-          xcrun simctl install "$device_udid" "$app_path"
-          xcrun simctl launch "$device_udid" com.mizuki20070314.XRelayClient
-
-      - name: Collect simulator diagnostics
-        if: always()
-        run: |
-          xcrun simctl list devices
-          xcrun simctl diagnose --output "$RUNNER_TEMP/simctl-diagnose" || true
-
-      - name: Upload build artifacts
+      - name: Upload unsigned IPA
         uses: actions/upload-artifact@v6
         with:
           name: XRelayClient-${{ github.sha }}
           if-no-files-found: error
-          path: |
-            ${{ runner.temp }}/XRelayClient-unsigned.ipa
-            ${{ runner.temp }}/DerivedData/Build/Products/Debug-iphonesimulator/XRelayClient.app
+          path: ${{ runner.temp }}/XRelayClient-unsigned.ipa
+
+      - name: Boot simulator (iPhone SE, 3rd generation)
+        run: |
+          set -euo pipefail
+          # sed rather than head: head would close the pipe early and make grep fail with SIGPIPE
+          device_udid="$(xcrun simctl list devices available | grep -F "iPhone SE (3rd generation) (" | sed -n '1p' | grep -oE "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}")"
+          test -n "$device_udid"
+          echo "SIMULATOR_UDID=$device_udid" >> "$GITHUB_ENV"
+          xcrun simctl boot "$device_udid" 2>/dev/null || true
+          xcrun simctl bootstatus "$device_udid" -b
+
+      - name: Take screenshots
+        run: |
+          set -euo pipefail
+          app_path="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/XRelayClient.app"
+          test -d "$app_path"
+          bash tools/ci_screenshots.sh "$app_path" "$SIMULATOR_UDID"
+
+      - name: Collect crash reports
+        if: always()
+        run: |
+          mkdir -p shots/crash
+          cp ~/Library/Logs/DiagnosticReports/XRelayClient* shots/crash/ 2>/dev/null || true
+          ls shots/crash || true
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: screenshots
+          path: shots
+          if-no-files-found: ignore

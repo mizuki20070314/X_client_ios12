@@ -1,0 +1,90 @@
+{
+  "_base": 1794823500,
+  "tabs": [
+    {
+      "id": "for_you",
+      "label": "話題を検索"
+    },
+    {
+      "id": "trending",
+      "label": "トレンド"
+    },
+    {
+      "id": "news",
+      "label": "ニュース"
+    },
+    {
+      "id": "sports",
+      "label": "スポーツ"
+    }
+  ],
+  "tab": "for_you",
+  "items": [
+    {
+      "t": "trend",
+      "name": "デモフェス",
+      "context": "エンターテインメント · トレンド",
+      "meta": "1.2万件のポスト",
+      "query": "デモフェス",
+      "rank": 1
+    },
+    {
+      "t": "trend",
+      "name": "週末の天気",
+      "context": "天気 · トレンド",
+      "meta": "3,456件のポスト",
+      "query": "週末の天気",
+      "rank": 2
+    },
+    {
+      "t": "trend",
+      "name": "新作ゲーム発表（デモ）",
+      "context": "ゲーム · トレンド",
+      "meta": "8.9万件のポスト",
+      "query": "新作ゲーム発表（デモ）",
+      "rank": 3
+    },
+    {
+      "t": "trend",
+      "name": "#夏の思い出",
+      "context": "話題",
+      "meta": "45.6万件のポスト",
+      "query": "夏の思い出",
+      "rank": 4
+    },
+    {
+      "t": "trend",
+      "name": "デモ新聞の特集",
+      "context": "ニュース",
+      "meta": "1,234件のポスト",
+      "query": "デモ新聞の特集",
+      "rank": 5
+    },
+    {
+      "t": "trend",
+      "name": "絵画コンテスト",
+      "context": null,
+      "meta": "567件のポスト",
+      "query": "絵画コンテスト",
+      "rank": 6
+    },
+    {
+      "t": "trend",
+      "name": "サッカー（デモ）",
+      "context": "スポーツ · トレンド",
+      "meta": null,
+      "query": "サッカー（デモ）",
+      "rank": 7
+    },
+    {
+      "t": "trend",
+      "name": "週末の撮影会",
+      "context": null,
+      "meta": null,
+      "query": "週末の撮影会",
+      "rank": null
+    }
+  ],
+  "top": null,
+  "bottom": null
+}

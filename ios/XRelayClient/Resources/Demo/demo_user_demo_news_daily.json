@@ -1,0 +1,31 @@
+{
+  "_base": 1794823500,
+  "user": {
+    "id": "100013",
+    "name": "デモ新聞",
+    "handle": "demo_news_daily",
+    "avatar": "demo://avatar/100013",
+    "verified": "business",
+    "square": false,
+    "protected": false,
+    "following": false,
+    "followed_by": false,
+    "blocking": false,
+    "muting": false,
+    "label": null,
+    "banner": "demo://banner/100013",
+    "bio": "架空の新聞社のデモアカウントです。",
+    "bio_entities": [],
+    "location": "",
+    "url": null,
+    "joined": 1450000000,
+    "followers": 250000,
+    "friends": 40,
+    "tweets": 18000,
+    "media_count": 3100,
+    "likes_count": 120,
+    "pinned_ids": [],
+    "blocked_by": false,
+    "follow_request_sent": false
+  }
+}
