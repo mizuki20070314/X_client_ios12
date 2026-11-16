@@ -19,6 +19,8 @@ Chromiumや常駐プロセスを使わず、CGIの各リクエストからXの�
    python -m pip install --target ~/private/xrelay/python -r ~/private/xclient_ios12/sakura/requirements.txt
    ```
 
+   SakuraのPythonはOpenSSLが古い環境があるため、`urllib3`は1.26系に固定しています。
+
    リポジトリの`twitter_openapi_python`高水準パッケージはPython 3.10以上を要求するため、このCGIでは使わず、標準的なHTTP処理と`xclienttransaction`を使います。
 
 3. `sakura/setup_config.py`をホームディレクトリなど`www`の外へ置き、SSHで対話実行します。公開APIカタログからWeb Appの既定ヘッダーを取得し、アカウントCookieは入力時に画面へ表示しません。
