@@ -18,7 +18,7 @@ import sys
 import time
 from http import HTTPStatus
 from pathlib import Path
-from urllib.parse import parse_qsl, urlencode, urljoin
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit
 
 PRIVATE_ROOT = Path.home() / "private" / "xrelay"
 PRIVATE_PYTHON = PRIVATE_ROOT / "python"
@@ -39,6 +39,10 @@ except ImportError:
 APP_ORIGIN = "https://x.com"
 MAX_BODY_BYTES = 256 * 1024
 TID_CACHE_SECONDS = 12 * 60 * 60
+TID_SCRIPT_LIST_URL = (
+    "https://raw.githubusercontent.com/fa0311/TwitterInternalAPIDocument/"
+    "develop/docs/json/ScriptLoadJson.json"
+)
 ALLOWED_OPERATIONS = {
     ("GET", "HomeTimeline"),
     ("GET", "SearchTimeline"),
@@ -209,6 +213,31 @@ def _write_private(path, content):
             pass
 
 
+def _get_ondemand_script_url(session, home_soup, get_ondemand_file_url):
+    candidate = None
+    try:
+        candidate = get_ondemand_file_url(response=home_soup)
+    except Exception:
+        # Current X HTML may not expose the chunk name in the markup. The
+        # linked internal-API catalog also tracks the current ondemand.s URL.
+        try:
+            response = session.get(TID_SCRIPT_LIST_URL, timeout=(5, 20))
+            response.raise_for_status()
+            candidate = json.loads(response.text).get("ondemand.s")
+        except Exception:
+            candidate = None
+
+    if not isinstance(candidate, str):
+        raise RequestError(502, "Could not locate X transaction-ID script.")
+    candidate = urljoin(APP_ORIGIN + "/", candidate)
+    parsed = urlsplit(candidate)
+    if (parsed.scheme != "https" or parsed.hostname != "abs.twimg.com"
+            or not parsed.path.startswith("/responsive-web/client-web/ondemand.s.")
+            or not parsed.path.endswith(".js") or parsed.query or parsed.fragment):
+        raise RequestError(502, "X returned an unexpected transaction-ID script URL.")
+    return candidate
+
+
 def _transaction_client(profile):
     try:
         from bs4 import BeautifulSoup
@@ -253,8 +282,7 @@ def _transaction_client(profile):
                 home_response.raise_for_status()
                 home_html = home_response.text
                 home_soup = BeautifulSoup(home_html, "html.parser")
-                script_url = get_ondemand_file_url(response=home_soup)
-                script_url = urljoin(APP_ORIGIN + "/", script_url)
+                script_url = _get_ondemand_script_url(session, home_soup, get_ondemand_file_url)
                 script_response = session.get(script_url, timeout=(5, 25))
                 script_response.raise_for_status()
                 _write_private(home_path, home_html.encode("utf-8"))

@@ -35,4 +35,4 @@ Chromiumや常駐プロセスを使わず、CGIの各リクエストからXの�
 
 ## 更新
 
-`requests.ndjson`のGraphQL query IDやfeature flagが古くなった場合、リポジトリのカタログを更新して再転送してください。`xclienttransaction`の素材はCGIがXから取得し、`~/private/xrelay/tid-cache/`に12時間キャッシュします。Xから401/403が返る場合は、認証Cookieやブラウザー情報が失効していないか確認してください。
+`requests.ndjson`のGraphQL query IDやfeature flagが古くなった場合、リポジトリのカタログを更新して再転送してください。`xclienttransaction`の素材はCGIがXから取得し、HTMLからURLを見つけられない場合は`TwitterInternalAPIDocument`の`ScriptLoadJson.json`を参照します。素材は`~/private/xrelay/tid-cache/`に12時間キャッシュします。Xから401/403が返る場合は、認証Cookieやブラウザー情報が失効していないか確認してください。

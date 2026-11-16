@@ -60,6 +60,36 @@ class CgiValidationTests(unittest.TestCase):
         with patch.dict(os.environ, {"HTTP_X_RELAY_KEY": "wrong"}, clear=True):
             self.assertFalse(xrelay._client_token_matches(config))
 
+    def test_transaction_script_uses_catalog_fallback_when_x_html_changes(self):
+        class Response(object):
+            text = json.dumps({"ondemand.s": "https://abs.twimg.com/responsive-web/client-web/ondemand.s.hash.js"})
+
+            def raise_for_status(self):
+                return None
+
+        class Session(object):
+            def __init__(self):
+                self.requested = []
+
+            def get(self, url, timeout=None):
+                self.requested.append(url)
+                return Response()
+
+        session = Session()
+
+        def missing_html_asset(response):
+            raise AttributeError("asset reference missing")
+
+        result = xrelay._get_ondemand_script_url(session, object(), missing_html_asset)
+        self.assertTrue(result.endswith("ondemand.s.hash.js"))
+        self.assertEqual(len(session.requested), 1)
+
+        def unsafe_html_asset(response):
+            return "https://example.invalid/script.js"
+
+        with self.assertRaises(xrelay.RequestError):
+            xrelay._get_ondemand_script_url(Session(), object(), unsafe_html_asset)
+
 
 if __name__ == "__main__":
     unittest.main()
