@@ -167,7 +167,7 @@ final class SettingsViewController: UITableViewController {
 
     private static func isSafeBasePath(_ path: String) -> Bool {
         guard !path.contains("//") else { return false }
-        path.split(separator: "/").allSatisfy { segment in
+        return path.split(separator: "/").allSatisfy { segment in
             segment.range(of: "^[A-Za-z0-9_-]+$", options: .regularExpression) != nil
         }
     }
