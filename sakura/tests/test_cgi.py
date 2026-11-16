@@ -1,0 +1,65 @@
+import hashlib
+import importlib.machinery
+import importlib.util
+import json
+import os
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+
+SCRIPT = Path(__file__).resolve().parents[1] / "www" / "cgi-bin" / "xrelay.cgi"
+LOADER = importlib.machinery.SourceFileLoader("xrelay_cgi", str(SCRIPT))
+SPEC = importlib.util.spec_from_loader(LOADER.name, LOADER)
+xrelay = importlib.util.module_from_spec(SPEC)
+LOADER.exec_module(xrelay)
+
+
+class CgiValidationTests(unittest.TestCase):
+    def test_catalog_allows_only_app_operations(self):
+        self.assertIsNotNone(xrelay._catalog_record("GET", "/i/api/graphql/fedFLLzmiCAuzPgA8lyh8Q/HomeTimeline"))
+        self.assertIsNotNone(xrelay._catalog_record("GET", "/i/api/graphql/3fEctOs2-FvTB7_mvm1hrQ/SearchTimeline"))
+        self.assertIsNotNone(xrelay._catalog_record("POST", "/i/api/graphql/H-t2v_HvFR07ZBP9aOeKoA/CreateTweet"))
+        self.assertIsNone(xrelay._catalog_record("POST", "/i/api/graphql/fedFLLzmiCAuzPgA8lyh8Q/HomeTimeline"))
+        self.assertIsNone(xrelay._catalog_record("POST", "/i/api/graphql/unknown/DeleteTweet"))
+
+    def test_post_payload_is_limited_to_text_post(self):
+        payload = {
+            "queryId": "H-t2v_HvFR07ZBP9aOeKoA",
+            "variables": {
+                "tweet_text": "hello",
+                "reply": {"in_reply_to_tweet_id": "123"},
+                "media": {"media_entities": ["unexpected"]},
+            },
+            "features": {},
+        }
+        normalized = xrelay._validate_post(
+            json.dumps(payload).encode("utf-8"),
+            "H-t2v_HvFR07ZBP9aOeKoA",
+        )
+        result = json.loads(normalized.decode("utf-8"))
+        self.assertIsNone(result["variables"]["reply"])
+        self.assertEqual(result["variables"]["media"], {"media_entities": [], "possibly_sensitive": False})
+
+        with self.assertRaises(xrelay.RequestError):
+            xrelay._validate_post(
+                b'{"queryId":"H-t2v_HvFR07ZBP9aOeKoA","variables":{"tweet_text":""}}',
+                "H-t2v_HvFR07ZBP9aOeKoA",
+            )
+        with self.assertRaises(xrelay.RequestError):
+            xrelay._validate_post(
+                b'{"queryId":"H-t2v_HvFR07ZBP9aOeKoA","variables":{"tweet_text":"x"},"extra":"not allowed"}',
+                "H-t2v_HvFR07ZBP9aOeKoA",
+            )
+
+    def test_client_key_is_compared_by_hash(self):
+        secret = "local-test-key"
+        config = {"client_token_sha256": hashlib.sha256(secret.encode("utf-8")).hexdigest()}
+        with patch.dict(os.environ, {"HTTP_X_RELAY_KEY": secret}, clear=True):
+            self.assertTrue(xrelay._client_token_matches(config))
+        with patch.dict(os.environ, {"HTTP_X_RELAY_KEY": "wrong"}, clear=True):
+            self.assertFalse(xrelay._client_token_matches(config))
+
+
+if __name__ == "__main__":
+    unittest.main()

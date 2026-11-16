@@ -1,0 +1,4 @@
+Options -Indexes
+RewriteEngine On
+RewriteRule ^i/api/(.*)$ cgi-bin/xrelay.cgi?__path=/i/api/$1 [QSA,L]
+RewriteRule ^(profiles|healthz)$ cgi-bin/xrelay.cgi?__path=/$1 [QSA,L]
