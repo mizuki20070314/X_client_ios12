@@ -19,7 +19,7 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
     private var user: User?
     private var state: State = .loading
     /// The selected tab, an index into the tabs of the profile (see userTabs(for:)).
-    private var tab = 0
+    private var selectedListTab = 0
     private var timeline: TimelineViewController?
     private var timelineLoaded = false
     private var header: ProfileHeaderView?
@@ -145,7 +145,7 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
             let header = ensureHeader()
             let titles: [String]? = listing ? tabTitles(for: user) : nil
             headerHeight = header.configure(user: user, width: width, tabTitles: titles,
-                                            selectedTab: tab, isOwn: isOwn(user))
+                                            selectedTab: selectedListTab, isOwn: isOwn(user))
             header.frame = CGRect(x: 0, y: 0, width: width, height: headerHeight)
             if listing {
                 let timeline = ensureTimeline(for: user)
@@ -217,7 +217,7 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
             return timeline
         }
         let tabs = userTabs(for: user)
-        let timeline = TimelineViewController(source: .userTimeline(userID: user.id, tab: tabs[min(tab, tabs.count - 1)]))
+        let timeline = TimelineViewController(source: .userTimeline(userID: user.id, tab: tabs[min(selectedListTab, tabs.count - 1)]))
         timeline.onScroll = { [weak self] scrollView in
             self?.handleScroll(scrollView)
         }
@@ -259,7 +259,7 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
         guard let user = user else { return }
         let tabs = userTabs(for: user)
         guard tabs.indices.contains(index) else { return }
-        tab = index
+        selectedListTab = index
         header?.setSelectedTab(index)
         timeline?.setSource(.userTimeline(userID: user.id, tab: tabs[index]))
     }
