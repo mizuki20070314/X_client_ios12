@@ -141,7 +141,10 @@ extension FocalTweetLayout {
     /// a second line, so the break falls after the date part. No line limit: the height comes from this layout.
     static func metadataLayout(for tweet: Tweet, width: CGFloat) -> TextLayout {
         let oneLine = metadataText(for: tweet, countOnNewLine: false)
-        let fitsOnOneLine = !TextLayout(oneLine, width: width, maxLines: 1).isTruncated
+        // the natural width of the unwrapped line (TextLayout's isTruncated missed this case on the simulator)
+        let unbounded = CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        let natural = oneLine.boundingRect(with: unbounded, options: [.usesLineFragmentOrigin], context: nil)
+        let fitsOnOneLine = ceil(natural.width) <= width
         let text = fitsOnOneLine ? oneLine : metadataText(for: tweet, countOnNewLine: true)
         return TextLayout(text, width: width, maxLines: 0)
     }

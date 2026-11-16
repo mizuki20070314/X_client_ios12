@@ -338,8 +338,8 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
     /// post, or the post directly above it in the same thread (ui-spec.md §4.3-4). The posts above the focal post
     /// (its ancestors) keep their reply line.
     private func applyReplyPolicy() {
-        guard case .tweet? = source,
-              let focalIndex = rows.firstIndex(where: { $0 is FocalTweetRow }),
+        // keyed on the focal row, not on `source`: the detail screen loads through a custom loader (source is nil)
+        guard let focalIndex = rows.firstIndex(where: { $0 is FocalTweetRow }),
               let focalID = tweetID(of: rows[focalIndex]) else {
             for case let row as TweetRow in rows {
                 row.hidesReplyLine = false
