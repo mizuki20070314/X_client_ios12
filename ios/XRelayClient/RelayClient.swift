@@ -21,6 +21,7 @@ final class RelayClient {
     private let session: URLSession
     private var catalog: [String: [[String: Any]]]?
     private var catalogBaseURL: URL?
+    private(set) var configurationRevision = 0
 
     private init() {
         let configuration = URLSessionConfiguration.default
@@ -38,6 +39,7 @@ final class RelayClient {
         self.baseURL = baseURL
         let trimmedProfile = profileName?.trimmingCharacters(in: .whitespacesAndNewlines)
         self.profileName = trimmedProfile?.isEmpty == true ? nil : trimmedProfile
+        configurationRevision += 1
         if catalogBaseURL != baseURL {
             catalog = nil
             catalogBaseURL = nil

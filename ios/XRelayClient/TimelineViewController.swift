@@ -4,6 +4,7 @@ final class TimelineViewController: UITableViewController {
     private var posts: [TimelinePost] = []
     private let refresh = UIRefreshControl()
     private let composeButton = UIButton(type: .system)
+    private var loadedConfigurationRevision = -1
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,11 +27,20 @@ final class TimelineViewController: UITableViewController {
         tableView.scrollIndicatorInsets.bottom = 74
         setupComposeButton()
 
-        if RelayClient.shared.isConfigured {
-            load()
-        } else {
+        if !RelayClient.shared.isConfigured {
             tableView.backgroundView = Self.emptyLabel("設定からリレーURLと認証情報を設定してください")
         }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard RelayClient.shared.isConfigured else {
+            tableView.backgroundView = Self.emptyLabel("設定からリレーURLと認証情報を設定してください")
+            return
+        }
+        guard loadedConfigurationRevision != RelayClient.shared.configurationRevision else { return }
+        loadedConfigurationRevision = RelayClient.shared.configurationRevision
+        load()
     }
 
     @objc private func load() {

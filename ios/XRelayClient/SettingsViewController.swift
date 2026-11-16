@@ -136,7 +136,11 @@ final class SettingsViewController: UITableViewController {
                 profileName: profileField.text,
                 bearerToken: tokenField.text
             )
-            navigationController?.popViewController(animated: true)
+            if let tabBarController = tabBarController {
+                tabBarController.selectedIndex = 0
+            } else {
+                navigationController?.popViewController(animated: true)
+            }
         } catch {
             showAlert(title: "保存に失敗しました", message: error.localizedDescription)
         }
