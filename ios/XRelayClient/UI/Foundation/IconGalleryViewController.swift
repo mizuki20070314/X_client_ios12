@@ -16,8 +16,9 @@ final class IconGalleryViewController: UIViewController {
     private let actionRowHeight: CGFloat = 50
     private let cellHeight: CGFloat = 84
 
-    // Overrides NSObject's init(); the screen is always shown full screen.
-    override init() {
+    // The screen is always shown full screen. (UIView keeps init() through init(frame:); a view controller
+    // needs its own, and it is not an override.)
+    init() {
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
     }

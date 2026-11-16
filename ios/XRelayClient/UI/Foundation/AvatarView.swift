@@ -21,12 +21,6 @@ final class AvatarView: UIView {
         setUp()
     }
 
-    // Declaring an initialiser hides the inherited init(); keep AvatarView() usable.
-    override init() {
-        super.init(frame: .zero)
-        setUp()
-    }
-
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setUp()

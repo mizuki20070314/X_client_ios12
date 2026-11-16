@@ -11,12 +11,6 @@ final class RemoteImageView: UIImageView {
         setUp()
     }
 
-    // Declaring an initialiser hides the inherited init(); keep the no-argument form usable.
-    override init() {
-        super.init(frame: .zero)
-        setUp()
-    }
-
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setUp()
