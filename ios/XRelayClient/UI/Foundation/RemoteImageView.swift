@@ -11,6 +11,17 @@ final class RemoteImageView: UIImageView {
         setUp()
     }
 
+    // UIImageView's plain init() is only inherited when every designated initialiser is overridden.
+    override init(image: UIImage?) {
+        super.init(image: image)
+        setUp()
+    }
+
+    override init(image: UIImage?, highlightedImage: UIImage?) {
+        super.init(image: image, highlightedImage: highlightedImage)
+        setUp()
+    }
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setUp()
