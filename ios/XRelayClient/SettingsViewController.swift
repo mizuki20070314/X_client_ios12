@@ -9,8 +9,8 @@ final class SettingsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "設定"
-        view.backgroundColor = .white
-        tableView.backgroundColor = .white
+        view.backgroundColor = XTheme.background
+        tableView.backgroundColor = XTheme.background
         tableView.separatorColor = XTheme.separator
         urlField.text = RelayClient.shared.baseURL.absoluteString
         urlField.placeholder = "https://relay.example.com"
@@ -49,7 +49,7 @@ final class SettingsViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        cell.backgroundColor = .white
+        cell.backgroundColor = XTheme.background
         switch indexPath.row {
         case 0:
             cell.textLabel?.text = "リレーURL"

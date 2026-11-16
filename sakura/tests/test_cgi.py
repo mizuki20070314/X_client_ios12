@@ -23,12 +23,12 @@ class CgiValidationTests(unittest.TestCase):
         self.assertIsNone(xrelay._catalog_record("POST", "/i/api/graphql/fedFLLzmiCAuzPgA8lyh8Q/HomeTimeline"))
         self.assertIsNone(xrelay._catalog_record("POST", "/i/api/graphql/unknown/DeleteTweet"))
 
-    def test_post_payload_is_limited_to_text_post(self):
+    def test_post_payload_supports_text_and_validated_reply(self):
         payload = {
             "queryId": "H-t2v_HvFR07ZBP9aOeKoA",
             "variables": {
                 "tweet_text": "hello",
-                "reply": {"in_reply_to_tweet_id": "123"},
+                "reply": {"in_reply_to_tweet_id": "123", "exclude_reply_user_ids": []},
                 "media": {"media_entities": ["unexpected"]},
             },
             "features": {},
@@ -38,8 +38,25 @@ class CgiValidationTests(unittest.TestCase):
             "H-t2v_HvFR07ZBP9aOeKoA",
         )
         result = json.loads(normalized.decode("utf-8"))
-        self.assertIsNone(result["variables"]["reply"])
+        self.assertEqual(result["variables"]["reply"], {
+            "in_reply_to_tweet_id": "123",
+            "exclude_reply_user_ids": [],
+        })
         self.assertEqual(result["variables"]["media"], {"media_entities": [], "possibly_sensitive": False})
+
+        payload["variables"]["reply"] = None
+        normalized = xrelay._validate_post(
+            json.dumps(payload).encode("utf-8"),
+            "H-t2v_HvFR07ZBP9aOeKoA",
+        )
+        self.assertIsNone(json.loads(normalized.decode("utf-8"))["variables"]["reply"])
+
+        payload["variables"]["reply"] = {"in_reply_to_tweet_id": "not-an-id"}
+        with self.assertRaises(xrelay.RequestError):
+            xrelay._validate_post(
+                json.dumps(payload).encode("utf-8"),
+                "H-t2v_HvFR07ZBP9aOeKoA",
+            )
 
         with self.assertRaises(xrelay.RequestError):
             xrelay._validate_post(

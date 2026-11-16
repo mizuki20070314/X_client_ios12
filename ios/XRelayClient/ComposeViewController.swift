@@ -2,17 +2,19 @@ import UIKit
 
 final class ComposeViewController: UIViewController, UITextViewDelegate {
     var onPost: (() -> Void)?
+    var replyToPost: TimelinePost?
 
     private let textView = UITextView()
     private let placeholderLabel = UILabel()
+    private let replyContextLabel = UILabel()
     private let characterCountLabel = UILabel()
     private let postButton = UIButton(type: .system)
     private var isSubmitting = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "新しいポスト"
-        view.backgroundColor = .white
+        title = replyToPost == nil ? "新しいポスト" : "返信"
+        view.backgroundColor = XTheme.background
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: "キャンセル",
@@ -35,17 +37,23 @@ final class ComposeViewController: UIViewController, UITextViewDelegate {
         let avatar = makeAvatar()
         textView.font = UIFont.systemFont(ofSize: 18)
         textView.textColor = XTheme.text
-        textView.backgroundColor = .white
+        textView.backgroundColor = XTheme.background
         textView.delegate = self
         textView.returnKeyType = .default
         textView.autocorrectionType = .yes
         textView.textContainerInset = UIEdgeInsets(top: 7, left: 4, bottom: 7, right: 4)
         textView.accessibilityLabel = "ポスト本文"
 
-        placeholderLabel.text = "いまどうしてる？"
+        placeholderLabel.text = replyToPost == nil ? "いまどうしてる？" : "返信をポスト"
         placeholderLabel.font = textView.font
         placeholderLabel.textColor = XTheme.secondaryText
         placeholderLabel.isUserInteractionEnabled = false
+
+        replyContextLabel.text = replyToPost.map { "返信先: @\($0.handle)" }
+        replyContextLabel.font = UIFont.systemFont(ofSize: 13)
+        replyContextLabel.textColor = XTheme.blue
+        replyContextLabel.numberOfLines = 1
+        replyContextLabel.isHidden = replyToPost == nil
 
         characterCountLabel.font = UIFont.systemFont(ofSize: 13)
         characterCountLabel.textColor = XTheme.secondaryText
@@ -54,10 +62,12 @@ final class ComposeViewController: UIViewController, UITextViewDelegate {
 
         view.addSubview(avatar)
         view.addSubview(textView)
+        view.addSubview(replyContextLabel)
         textView.addSubview(placeholderLabel)
         view.addSubview(characterCountLabel)
         avatar.translatesAutoresizingMaskIntoConstraints = false
         textView.translatesAutoresizingMaskIntoConstraints = false
+        replyContextLabel.translatesAutoresizingMaskIntoConstraints = false
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
         characterCountLabel.translatesAutoresizingMaskIntoConstraints = false
 
@@ -66,7 +76,11 @@ final class ComposeViewController: UIViewController, UITextViewDelegate {
             avatar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             avatar.widthAnchor.constraint(equalToConstant: 44),
             avatar.heightAnchor.constraint(equalToConstant: 44),
-            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            replyContextLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            replyContextLabel.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 12),
+            replyContextLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            replyContextLabel.heightAnchor.constraint(equalToConstant: replyToPost == nil ? 0 : 18),
+            textView.topAnchor.constraint(equalTo: replyContextLabel.bottomAnchor, constant: 6),
             textView.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 12),
             textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             textView.bottomAnchor.constraint(equalTo: characterCountLabel.topAnchor, constant: -12),
@@ -99,7 +113,7 @@ final class ComposeViewController: UIViewController, UITextViewDelegate {
         }
         isSubmitting = true
         updateComposerState()
-        RelayClient.shared.post(text: text) { [weak self] result in
+        RelayClient.shared.post(text: text, replyToID: replyToPost?.id) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:

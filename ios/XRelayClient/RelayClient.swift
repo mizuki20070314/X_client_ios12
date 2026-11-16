@@ -87,23 +87,31 @@ final class RelayClient {
         }
     }
 
-    func search(_ query: String, completion: @escaping (Result<[TimelinePost], Error>) -> Void) {
+    func search(
+        _ query: String,
+        sort: SearchSort = .top,
+        completion: @escaping (Result<[TimelinePost], Error>) -> Void
+    ) {
         request(operation: "SearchTimeline", variables: [
             "rawQuery": query,
             "count": 20,
             "querySource": "typed_query",
-            "product": "Top"
+            "product": sort.rawValue
         ]) { result in
             completion(result.map { Self.posts(from: $0) })
         }
     }
 
-    func post(text: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func post(
+        text: String,
+        replyToID: String? = nil,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
         if catalog == nil || catalogBaseURL != baseURL {
             loadCatalog { [weak self] result in
                 switch result {
                 case .success:
-                    self?.post(text: text, completion: completion)
+                    self?.post(text: text, replyToID: replyToID, completion: completion)
                 case .failure(let error):
                     completion(.failure(error))
                 }
@@ -121,7 +129,18 @@ final class RelayClient {
         var body = operation["data"] as? [String: Any] ?? [:]
         var variables = body["variables"] as? [String: Any] ?? [:]
         variables["tweet_text"] = text
-        variables["reply"] = NSNull()
+        if let replyToID = replyToID?.trimmingCharacters(in: .whitespacesAndNewlines), !replyToID.isEmpty {
+            guard replyToID.range(of: "^[0-9]{1,30}$", options: .regularExpression) != nil else {
+                completion(.failure(APIError.server("返信先のポストIDが正しくありません。")))
+                return
+            }
+            variables["reply"] = [
+                "in_reply_to_tweet_id": replyToID,
+                "exclude_reply_user_ids": [String]()
+            ]
+        } else {
+            variables["reply"] = NSNull()
+        }
         variables["media"] = [
             "media_entities": [],
             "possibly_sensitive": false
@@ -325,7 +344,7 @@ final class RelayClient {
         if let dictionary = object as? [String: Any] {
             if let legacy = dictionary["legacy"] as? [String: Any],
                let id = legacy["id_str"] as? String ?? dictionary["rest_id"] as? String,
-               let text = legacy["full_text"] as? String ?? dictionary["text"] as? String {
+               let text = postText(legacy: legacy, dictionary: dictionary) {
                 let core = dictionary["core"] as? [String: Any]
                 let user = (core?["user_results"] as? [String: Any]) ?? (dictionary["user_results"] as? [String: Any])
                 let userResult = user?["result"] as? [String: Any]
@@ -333,7 +352,26 @@ final class RelayClient {
                 let name = userLegacy?["name"] as? String ?? "Xユーザー"
                 let handle = userLegacy?["screen_name"] as? String ?? ""
                 let avatar = userLegacy?["profile_image_url_https"] as? String
-                posts.append(TimelinePost(id: id, name: name, handle: handle, text: text, avatarURL: avatar.flatMap(URL.init)))
+                let createdAt = parsePostDate(legacy["created_at"] as? String)
+                let media = mediaItems(from: legacy)
+                let views = (dictionary["views"] as? [String: Any])?["count"]
+                let viewCount = integerValue(views)
+                posts.append(TimelinePost(
+                    id: id,
+                    name: name,
+                    handle: handle,
+                    text: text,
+                    avatarURL: avatar.flatMap(URL.init),
+                    createdAt: createdAt,
+                    replyCount: integerValue(legacy["reply_count"]) ?? 0,
+                    repostCount: integerValue(legacy["retweet_count"]) ?? 0,
+                    likeCount: integerValue(legacy["favorite_count"]) ?? 0,
+                    viewCount: viewCount,
+                    media: media,
+                    isVerified: (userResult?["is_blue_verified"] as? Bool) ?? (userLegacy?["verified"] as? Bool) ?? false,
+                    isLiked: (legacy["favorited"] as? Bool) ?? false,
+                    isRetweeted: (legacy["retweeted"] as? Bool) ?? false
+                ))
             }
             for value in dictionary.values {
                 collectPosts(from: value, into: &posts)
@@ -343,5 +381,41 @@ final class RelayClient {
                 collectPosts(from: value, into: &posts)
             }
         }
+    }
+
+    private static func postText(legacy: [String: Any], dictionary: [String: Any]) -> String? {
+        if let note = dictionary["note_tweet"] as? [String: Any],
+           let results = note["note_tweet_results"] as? [String: Any],
+           let result = results["result"] as? [String: Any],
+           let text = result["text"] as? String {
+            return text
+        }
+        return legacy["full_text"] as? String ?? dictionary["text"] as? String
+    }
+
+    private static func mediaItems(from legacy: [String: Any]) -> [TimelineMedia] {
+        let extended = legacy["extended_entities"] as? [String: Any]
+        let entities = legacy["entities"] as? [String: Any]
+        let rows = (extended?["media"] as? [[String: Any]]) ?? (entities?["media"] as? [[String: Any]]) ?? []
+        return rows.compactMap { row in
+            let rawURL = row["media_url_https"] as? String ?? row["media_url"] as? String
+            guard let rawURL = rawURL, let url = URL(string: rawURL) else { return nil }
+            let altText = row["ext_alt_text"] as? String ?? row["alt_text"] as? String ?? ""
+            return TimelineMedia(url: url, altText: altText)
+        }
+    }
+
+    private static func parsePostDate(_ value: String?) -> Date? {
+        guard let value = value else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "EEE MMM dd HH:mm:ss Z yyyy"
+        return formatter.date(from: value)
+    }
+
+    private static func integerValue(_ value: Any?) -> Int? {
+        if let number = value as? NSNumber { return number.intValue }
+        if let string = value as? String { return Int(string) }
+        return nil
     }
 }

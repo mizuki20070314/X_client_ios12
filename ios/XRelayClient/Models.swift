@@ -1,11 +1,41 @@
 import Foundation
 
+struct TimelineMedia {
+    let url: URL
+    let altText: String
+}
+
 struct TimelinePost {
     let id: String
     let name: String
     let handle: String
     let text: String
     let avatarURL: URL?
+    let createdAt: Date?
+    let replyCount: Int
+    let repostCount: Int
+    let likeCount: Int
+    let viewCount: Int?
+    let media: [TimelineMedia]
+    let isVerified: Bool
+    let isLiked: Bool
+    let isRetweeted: Bool
+
+    var permalink: URL? {
+        URL(string: "https://x.com/i/web/status/\(id)")
+    }
+}
+
+enum SearchSort: String {
+    case top = "Top"
+    case latest = "Latest"
+
+    var title: String {
+        switch self {
+        case .top: return "話題"
+        case .latest: return "最新"
+        }
+    }
 }
 
 enum APIError: LocalizedError {

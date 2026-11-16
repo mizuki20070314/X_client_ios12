@@ -321,7 +321,25 @@ def _validate_post(body, expected_query_id):
     text = variables.get("tweet_text")
     if not isinstance(text, str) or not text.strip() or len(text) > 280:
         raise RequestError(400, "Post text must be between 1 and 280 characters.")
-    payload["variables"]["reply"] = None
+
+    reply = variables.get("reply")
+    if reply is None:
+        payload["variables"]["reply"] = None
+    elif isinstance(reply, dict):
+        reply_id = reply.get("in_reply_to_tweet_id")
+        excluded_ids = reply.get("exclude_reply_user_ids", [])
+        if not isinstance(reply_id, str) or not re.match(r"^[0-9]{1,30}$", reply_id):
+            raise RequestError(400, "Reply target must be a numeric post ID.")
+        if (not isinstance(excluded_ids, list) or len(excluded_ids) > 50
+                or any(not isinstance(item, str) or not re.match(r"^[0-9]{1,30}$", item)
+                       for item in excluded_ids)):
+            raise RequestError(400, "Reply exclusions are invalid.")
+        payload["variables"]["reply"] = {
+            "in_reply_to_tweet_id": reply_id,
+            "exclude_reply_user_ids": excluded_ids,
+        }
+    else:
+        raise RequestError(400, "Reply payload is invalid.")
     payload["variables"]["media"] = {"media_entities": [], "possibly_sensitive": False}
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
