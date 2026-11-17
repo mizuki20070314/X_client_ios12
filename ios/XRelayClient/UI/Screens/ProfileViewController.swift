@@ -200,6 +200,10 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
         header.onEditTap = { [weak self] in
             self?.openEditProfile()
         }
+        header.onBioTranslationTap = { [weak self] in
+            guard let user = self?.user else { return }
+            UserActions.toggleBioTranslation(user)
+        }
         header.onTabSelect = { [weak self] index in
             self?.selectProfileTab(index)
         }
@@ -340,7 +344,7 @@ final class ProfileViewController: BaseViewController, ModeSelectable, UIScrollV
         Toast.show("コピーしました")
     }
 
-    /// The user changed (followed, muted, blocked, ...): the header and the state follow it.
+    /// The user changed (followed, muted, blocked, translated, ...): the header is rebuilt, so its height follows.
     @objc private func userChanged(_ notification: Notification) {
         guard let changed = notification.object as? User, let current = user, changed === current else { return }
         decide(current)
@@ -357,6 +361,8 @@ final class ProfileHeaderView: UIView {
     var onLinkTap: (() -> Void)?
     /// The edit button of the own profile (it takes the follow button's place).
     var onEditTap: (() -> Void)?
+    /// Tapping the translation line under the bio shows or hides the translated bio.
+    var onBioTranslationTap: (() -> Void)?
 
     private static let avatarSide: CGFloat = 72
     private static let ringWidth: CGFloat = 4
@@ -374,6 +380,9 @@ final class ProfileHeaderView: UIView {
     private static let tabHeight: CGFloat = 44
     private static let nameHeight: CGFloat = 24
     private static let lineHeight: CGFloat = 20
+    /// The translation line under the bio: 2 pt below the bio, 22 pt high.
+    private static let translationGap: CGFloat = 2
+    private static let translationLineHeight: CGFloat = 22
 
     private let banner = RemoteImageView()
     private let ring = UIView()
@@ -387,6 +396,9 @@ final class ProfileHeaderView: UIView {
     private let handleLabel = UILabel()
     private let chipLabel = UILabel()
     private let bioLabel = LinkLabel()
+    /// The translation line: a control of its own (the touch target), with the line drawn in it.
+    private let translationControl = UIControl()
+    private let translationLabel = UILabel()
     private let followingLabel = UILabel()
     private let followersLabel = UILabel()
     private var metaViews: [UIView] = []
@@ -466,6 +478,14 @@ final class ProfileHeaderView: UIView {
         addSubview(handleLabel)
         addSubview(chipLabel)
         addSubview(bioLabel)
+        translationControl.isHidden = true
+        translationControl.addTarget(self, action: #selector(translationTapped), for: .touchUpInside)
+        translationLabel.isUserInteractionEnabled = false
+        translationLabel.numberOfLines = 1
+        translationLabel.font = Theme.font(15)
+        translationLabel.textColor = palette.accent
+        translationControl.addSubview(translationLabel)
+        addSubview(translationControl)
         addSubview(followingLabel)
         addSubview(followersLabel)
     }
@@ -552,17 +572,22 @@ final class ProfileHeaderView: UIView {
         }
         y += lineHeight + 12
 
-        // bio: 12 pt lower, links touchable
-        if user.bio.isEmpty {
+        // bio: 12 pt lower, links touchable; a shown translation replaces the original text
+        let shown = bioContent(for: user)
+        if shown.text.isEmpty {
             bioLabel.isHidden = true
+            translationControl.isHidden = true
         } else {
-            let attributed = TweetText.attributed(user.bio, entities: user.bioEntities, font: Theme.font(15),
+            let attributed = TweetText.attributed(shown.text, entities: shown.entities, font: Theme.font(15),
                                                   color: palette.text, linkColor: palette.accent, lineSpacing: 2)
-            let layout = TextLayout(attributed, width: contentWidth, entities: user.bioEntities)
+            let layout = TextLayout(attributed, width: contentWidth, entities: shown.entities)
             bioLabel.isHidden = false
             bioLabel.textLayout = layout
             bioLabel.frame = CGRect(x: pad, y: y, width: contentWidth, height: layout.size.height)
-            y += layout.size.height + 12
+            y += layout.size.height
+            // the translation line sits 2 pt under the bio; the next item is 12 pt below it
+            y = layoutTranslationLine(for: user, pad: pad, contentWidth: contentWidth, top: y)
+            y += 12
         }
 
         // meta items in a wrapping row, 12 pt lower
@@ -610,6 +635,39 @@ final class ProfileHeaderView: UIView {
     /// Selects a tab in the strip without telling the owner (the owner changes the list itself).
     func setSelectedTab(_ index: Int) {
         tabStrip?.selectedIndex = index
+    }
+
+    /// The bio to show: the translation while it is shown and present, otherwise the original bio.
+    private func bioContent(for user: User) -> (text: String, entities: [TextEntity]) {
+        if user.showsBioTranslation, let translation = user.bioTranslation, !translation.text.isEmpty {
+            return (translation.text, translation.entities)
+        }
+        return (user.bio, user.bioEntities)
+    }
+
+    /// The translation line under the bio: 2 pt below the bio and 22 pt high, with a touch target of its own.
+    /// Nothing is shown when the bio cannot be translated. Returns the y below the line, or `top` without one.
+    private func layoutTranslationLine(for user: User, pad: CGFloat, contentWidth: CGFloat, top: CGFloat) -> CGFloat {
+        let line = TranslationLine.attributed(isTranslatable: user.bioTranslatable,
+                                              isTranslating: user.isTranslatingBio,
+                                              translation: user.bioTranslation,
+                                              showsTranslation: user.showsBioTranslation,
+                                              promptTitle: "自己紹介を翻訳",
+                                              fontSize: 15)
+        guard let text = line else {
+            translationControl.isHidden = true
+            return top
+        }
+        let height = ProfileHeaderView.translationLineHeight
+        let y = top + ProfileHeaderView.translationGap
+        translationLabel.attributedText = text
+        let fullWidth = translationLabel.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude,
+                                                             height: height)).width
+        let width = min(contentWidth, ceil(fullWidth))
+        translationControl.isHidden = false
+        translationControl.frame = CGRect(x: pad, y: y, width: width, height: height)
+        translationLabel.frame = CGRect(x: 0, y: 0, width: width, height: height)
+        return y + height
     }
 
     /// A wrapping row of "icon text" items: 13 pt icon, 4 pt gap, 12 pt between items. Returns the y below it.
@@ -703,6 +761,10 @@ final class ProfileHeaderView: UIView {
 
     @objc private func linkTapped() {
         onLinkTap?()
+    }
+
+    @objc private func translationTapped() {
+        onBioTranslationTap?()
     }
 
     @objc private func followingTapped() {

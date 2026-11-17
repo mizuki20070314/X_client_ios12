@@ -402,6 +402,44 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
         }
     }
 
+    /// A post's layout changed (its translation came, went or changed): the rows that show it are laid out again and
+    /// redrawn in place, without animation. A row above the screen changes the content below it, so the offset
+    /// follows the change and the visible rows stay where they are (ui-spec.md §7).
+    private func layoutDidChange(of tweet: Tweet) {
+        let indexes = rows.indices.filter { tweetID(of: rows[$0]) == tweet.id }
+        guard !indexes.isEmpty else { return }
+        let width = tableView.bounds.width
+        let firstVisible = tableView.indexPathsForVisibleRows?.map { $0.row }.min()
+        var offsetChange: CGFloat = 0
+        var paths: [IndexPath] = []
+        for index in indexes {
+            let row = rows[index]
+            // the height before the change comes from the layout still cached for the row
+            let before = row.height(for: width)
+            dropLayout(of: row)
+            let after = row.height(for: width)
+            if let firstVisible = firstVisible, index < firstVisible {
+                offsetChange += after - before
+            }
+            paths.append(IndexPath(row: index, section: 0))
+        }
+        UIView.performWithoutAnimation {
+            tableView.reloadRows(at: paths, with: .none)
+            if offsetChange != 0 {
+                tableView.contentOffset.y += offsetChange
+            }
+        }
+    }
+
+    /// Forgets the layout of a row, so its next height query lays it out again.
+    private func dropLayout(of row: TimelineRow) {
+        if let tweetRow = row as? TweetRow {
+            tweetRow.layoutCache = nil
+        } else if let focal = row as? FocalTweetRow {
+            focal.layoutCache = nil
+        }
+    }
+
     private func isHighlightable(_ row: TimelineRow) -> Bool {
         if row is HeaderRow || row is TombstoneRow || row is FocalTweetRow {
             return false
@@ -433,7 +471,12 @@ final class TimelineViewController: UIViewController, UITableViewDataSource, UIT
                                                              queue: .main) { [weak self] _ in
             self?.reconfigureVisibleRows()
         }
-        notificationTokens = [deleted, session]
+        let layout = NotificationCenter.default.addObserver(forName: Tweet.layoutDidChange, object: nil,
+                                                            queue: .main) { [weak self] note in
+            guard let tweet = note.object as? Tweet else { return }
+            self?.layoutDidChange(of: tweet)
+        }
+        notificationTokens = [deleted, session, layout]
     }
 
     // MARK: - Layout and state views

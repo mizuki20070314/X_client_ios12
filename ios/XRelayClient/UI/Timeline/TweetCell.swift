@@ -135,6 +135,54 @@ final class TweetAttachmentViews {
     }
 }
 
+/// The text a post shows: the translation's text and entities while the translation is shown, else the original.
+/// Only the text changes: the font and the colours stay the same (ui-spec.md §7).
+enum TweetTextSource {
+    static func shown(for tweet: Tweet) -> (text: String, entities: [TextEntity]) {
+        if tweet.showsTranslation, let translation = tweet.translation {
+            return (translation.text, translation.entities)
+        }
+        return (tweet.text, tweet.entities)
+    }
+}
+
+/// The translation line under a post's text (ui-spec.md §7). nil when the post is not translatable.
+enum TweetTranslationLine {
+    static func attributed(for tweet: Tweet, fontSize: CGFloat) -> NSAttributedString? {
+        return TranslationLine.attributed(isTranslatable: tweet.translatable, isTranslating: tweet.isTranslating,
+                                          translation: tweet.translation, showsTranslation: tweet.showsTranslation,
+                                          promptTitle: "ポストを翻訳", fontSize: fontSize)
+    }
+}
+
+/// The translation line of a post: a touch target of its own. A control takes the tap, so it never opens the row.
+final class TranslationControl: UIControl {
+    let captionLabel = UILabel()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        captionLabel.numberOfLines = 1
+        captionLabel.lineBreakMode = .byTruncatingTail
+        addSubview(captionLabel)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        captionLabel.frame = bounds
+    }
+
+    /// Dims the line while the finger is on it, as a pressed link looks.
+    override var isHighlighted: Bool {
+        didSet {
+            captionLabel.alpha = isHighlighted ? 0.5 : 1
+        }
+    }
+}
+
 /// The frames of a post row at one width (ui-spec.md §4.3). Built once per width by TweetRow and cached there.
 struct TweetLayout {
     let width: CGFloat
@@ -150,6 +198,9 @@ struct TweetLayout {
     let textFrame: CGRect?
     let text: TextLayout?
     let moreFrame: CGRect?
+    /// The translation line under the text block (ui-spec.md §7); nil when the post has none.
+    let translationFrame: CGRect?
+    let translationText: NSAttributedString?
     let attachments: TweetAttachmentFrames
     let actionFrame: CGRect
     let threadAbove: CGRect?
@@ -196,22 +247,34 @@ extension TweetLayout {
         var textFrame: CGRect?
         var text: TextLayout?
         var moreFrame: CGRect?
-        if !tweet.text.isEmpty {
-            let attributed = TweetText.attributed(tweet.text, entities: tweet.entities, font: Theme.font(15),
+        let shown = TweetTextSource.shown(for: tweet)
+        if !shown.text.isEmpty {
+            let attributed = TweetText.attributed(shown.text, entities: shown.entities, font: Theme.font(15),
                                                   color: palette.text, linkColor: palette.accent, lineSpacing: 2)
             let layout = TextLayout(attributed, width: contentWidth, maxLines: tweet.isLong ? 10 : 0,
-                                    entities: tweet.entities)
+                                    entities: shown.entities)
             textFrame = CGRect(x: contentX, y: y, width: contentWidth, height: layout.size.height)
             text = layout
             y += layout.size.height
+            // the "さらに表示" line of a truncated long post comes before the translation line
             if layout.isTruncated {
                 moreFrame = CGRect(x: contentX, y: y, width: contentWidth, height: 22)
                 y += 22
             }
         }
 
+        // the translation line sits 2 pt under the text block, one line of 18 pt in list rows (ui-spec.md §7)
+        var translationFrame: CGRect?
+        var translationText: NSAttributedString?
+        if let line = TweetTranslationLine.attributed(for: tweet, fontSize: 13) {
+            y += 2
+            translationFrame = CGRect(x: contentX, y: y, width: contentWidth, height: 18)
+            translationText = line
+            y += 18
+        }
+
         // 10 pt after the name line when nothing but the name line comes before the attachments
-        let hasTextBlock = replyFrame != nil || textFrame != nil
+        let hasTextBlock = replyFrame != nil || textFrame != nil || translationFrame != nil
         let firstGap = hasTextBlock ? TimelineSpec.attachmentGap : TimelineSpec.nameAttachmentGap
         let attachments = TweetAttachmentFrames.make(for: tweet, x: contentX, width: contentWidth, top: y,
                                                      firstGap: firstGap)
@@ -254,6 +317,8 @@ extension TweetLayout {
             textFrame: textFrame,
             text: text,
             moreFrame: moreFrame,
+            translationFrame: translationFrame,
+            translationText: translationText,
             attachments: attachments,
             actionFrame: actionFrame,
             threadAbove: threadAbove,
@@ -286,6 +351,7 @@ final class TweetCell: TimelineCellBase {
     private let replyLabel = UILabel()
     private let bodyLabel = LinkLabel(frame: .zero)
     private let moreLabel = UILabel()
+    private let translationControl = TranslationControl(frame: .zero)
     private let attachments = TweetAttachmentViews()
     private let actionBar = ActionBarView(frame: .zero)
 
@@ -309,6 +375,7 @@ final class TweetCell: TimelineCellBase {
         overflowButton.setImage(Icons.image(.overflow, size: TimelineSpec.overflowIconSize), for: .normal)
         overflowButton.tintColor = palette.secondaryText
         overflowButton.addTarget(self, action: #selector(overflowTapped), for: .touchUpInside)
+        translationControl.addTarget(self, action: #selector(translationTapped), for: .touchUpInside)
 
         // entity taps (links, mentions, hashtags) open their target; other taps reach the row
         bodyLabel.onTapEntity = { entity in Router.open(entity: entity) }
@@ -341,7 +408,7 @@ final class TweetCell: TimelineCellBase {
         }
 
         let views: [UIView] = [contextIcon, contextLabel, avatar, nameLine, overflowButton, replyLabel,
-                               bodyLabel, moreLabel]
+                               bodyLabel, moreLabel, translationControl]
         for view in views {
             contentView.addSubview(view)
         }
@@ -368,6 +435,8 @@ final class TweetCell: TimelineCellBase {
         bodyLabel.timelinePlace(layout.textFrame)
         bodyLabel.textLayout = layout.text
         moreLabel.timelinePlace(layout.moreFrame)
+        translationControl.timelinePlace(layout.translationFrame)
+        translationControl.captionLabel.attributedText = layout.translationText
 
         attachments.apply(tweet, frames: layout.attachments)
 
@@ -385,6 +454,7 @@ final class TweetCell: TimelineCellBase {
         avatar.set(url: nil, square: false, size: Metrics.avatar)
         attachments.reset()
         bodyLabel.textLayout = nil
+        translationControl.captionLabel.attributedText = nil
     }
 
     deinit {
@@ -419,6 +489,11 @@ final class TweetCell: TimelineCellBase {
 
     @objc private func overflowTapped() {
         withTweet { TweetActions.showOverflowMenu(for: $0) }
+    }
+
+    /// The translation line: shows, hides or starts the translation of the post (ui-spec.md §7).
+    @objc private func translationTapped() {
+        withTweet { TweetActions.toggleTranslation($0) }
     }
 
     /// Re-applies the action bar when the post changes (counts, liked state). The text is laid out once per row.

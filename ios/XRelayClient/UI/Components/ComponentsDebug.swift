@@ -24,5 +24,9 @@ enum ComponentsDebug {
             guard let tweet = TweetStore.shared.tweet(id: argument) else { return }
             TweetActions.toggleBookmark(tweet)
         }
+        DebugRoutes.register("translate") { argument in
+            guard let tweet = TweetStore.shared.tweet(id: argument) else { return }
+            TweetActions.toggleTranslation(tweet)
+        }
     }
 }

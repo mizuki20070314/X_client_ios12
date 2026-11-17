@@ -4,7 +4,7 @@
 The answers have the exact shape of docs/api-v2.md: every key the contract lists is present (null where it is
 nullable). Accounts and posts are invented and written in Japanese. Images use the demo:// scheme (see
 docs/ios-design.md §4.5). Times are stored relative to BASE_EPOCH under "_base"; DemoData moves created_at and
-time to the present when it loads a file.
+time to the present when it loads a file. The translation answer (demo_translate.json) has no times, so no "_base".
 
 usage: python3 tools/make_demo_data.py
 """
@@ -94,7 +94,7 @@ def basic_user(uid, name, handle, *, verified=None, square=False, protected=Fals
 
 
 def full_user(uid, name, handle, *, bio="", location="", link=None, joined=None, followers=0,
-              friends=0, tweets=0, media_count=0, likes_count=0, pinned=(), **flags):
+              friends=0, tweets=0, media_count=0, likes_count=0, pinned=(), bio_translatable=False, **flags):
     user = basic_user(uid, name, handle, **flags)
     text = rich(bio) if isinstance(bio, str) else bio
     user.update({
@@ -112,6 +112,7 @@ def full_user(uid, name, handle, *, bio="", location="", link=None, joined=None,
         "pinned_ids": list(pinned),
         "blocked_by": False,
         "follow_request_sent": False,
+        "bio_translatable": bio_translatable,
     })
     return user
 
@@ -165,16 +166,24 @@ def poll_of(choices, ends_at, final=False):
 _post_numbers = [0]
 
 
+# the English post of the translation demo has a fixed id (docs/ui-spec.md §7); no generated post may take it
+RESERVED_POST_IDS = {"2122000000000000090"}
+
+
 def new_id():
     """Post ids are 19-digit strings, numbered in creation order so that the output is the same on every run."""
-    _post_numbers[0] += 1
-    return "2122%015d" % _post_numbers[0]
+    while True:
+        _post_numbers[0] += 1
+        candidate = "2122%015d" % _post_numbers[0]
+        if candidate not in RESERVED_POST_IDS:
+            return candidate
 
 
 def post(author, *, text="", rich_text=None, tid=None, ago=0, long=False, replies=0, reposts=0,
          likes=0, quotes=0, bookmarks=0, views=None, liked=False, retweeted=False, bookmarked=False,
          media=None, quote=None, quote_unavailable=None, card_=None, reply_to=None, conversation=None,
-         lang="ja", sensitive=False, source=None, edited=False, place=None, reply_limited=False):
+         lang="ja", sensitive=False, source=None, edited=False, place=None, reply_limited=False,
+         translatable=False):
     """One post (api-v2.md §2.5). `ago` is the age in seconds at BASE_EPOCH."""
     content = rich_text if rich_text is not None else rich(text)
     post_id = tid or new_id()
@@ -208,6 +217,7 @@ def post(author, *, text="", rich_text=None, tid=None, ago=0, long=False, replie
         "edited": edited,
         "place": place,
         "reply_limited": reply_limited,
+        "translatable": translatable,
     }
 
 
@@ -312,6 +322,12 @@ CAST = {
     "poll": full_user("100016", "アンケート係", "poll_keeper_demo",
                       bio="週末のアンケートを出しています。", location="", joined=1520000000,
                       followers=760, friends=60, tweets=900, media_count=5, likes_count=20),
+    "alex": full_user("100017", "Alex Demo", "alex_demo",
+                      bio=rich("Hiker and photographer. Weekends on the trails, weekdays in spreadsheets. ")
+                      .hashtag("hiking"),
+                      location="Denver", joined=1600000000,
+                      followers=512, friends=210, tweets=1300, media_count=480, likes_count=2100,
+                      bio_translatable=True),
 }
 BASIC = {key: as_basic(user) for key, user in CAST.items()}
 
@@ -391,11 +407,16 @@ p_viral = post(BASIC["misaki"], ago=150000, likes=1234567, replies=4567, reposts
                rich_text=rich("新商品の発表です。 ").cashtag("SAMPLE").add(" は架空の記号です。"))
 p_edited = post(BASIC["sho"], text="誤字を直しました。", ago=158400, likes=3, edited=True)
 p_follow = post(BASIC["osamu"], text="今日は雨ですね。写真の整理をしています。", ago=300, likes=1, views=90)
+# the English post of the translation demo: a fixed id, the second item of the home timeline (docs/ui-spec.md §7)
+alex_post = post(BASIC["alex"], ago=600, likes=4, replies=1, views=812, lang="en", translatable=True,
+                 rich_text=rich("Just finished a long hike. The view from the top was worth every step! ")
+                 .hashtag("hiking"), tid="2122000000000000090")
 
 # ---- the home timeline ----
 
 HOME_FORYOU = page([
-    tweet_item(p_hello), tweet_item(p_sunset), tweet_item(p_cafe), tweet_item(p_hike), tweet_item(p_art),
+    tweet_item(p_hello), tweet_item(alex_post), tweet_item(p_sunset), tweet_item(p_cafe), tweet_item(p_hike),
+    tweet_item(p_art),
     tweet_item(p_tall), tweet_item(p_panorama), tweet_item(p_video), tweet_item(p_gif),
     tweet_item(p_quote_media), tweet_item(p_quote_text), tweet_item(p_quote_gone),
     tweet_item(p_news), tweet_item(p_tech), tweet_item(p_player), tweet_item(p_poll),
@@ -581,6 +602,18 @@ EXPLORE = {
 }
 
 
+# ---- translation (docs/api-v2.md §4): the answer of /v2/tweet/translate and /v2/user/translate ----
+
+TRANSLATION = rich("長いハイキングを終えたところです。頂上からの眺めは一歩一歩の価値がありました！ ").hashtag("hiking")
+TRANSLATE = {
+    "text": TRANSLATION.text,
+    "entities": TRANSLATION.entities,
+    "source_lang": "en",
+    "source_lang_name": "英語",
+    "provider": "Google",
+}
+
+
 # ---- the files ----
 
 def build_answers():
@@ -605,6 +638,7 @@ def build_answers():
         "notifications_mentions": NOTIFICATIONS_MENTIONS,
         "bookmarks": BOOKMARKS,
         "explore": EXPLORE,
+        "translate": TRANSLATE,
         "user_default": {"_base": BASE_EPOCH, "user": CAST["me"]},
     }
     for user in CAST.values():
@@ -612,17 +646,43 @@ def build_answers():
     return answers
 
 
+def check_post_ids(answers):
+    """Two different posts must never share an id: the app merges posts that have the same id (TweetStore).
+    Returns the number of distinct posts."""
+    seen = {}
+
+    def visit(node):
+        if isinstance(node, dict):
+            if {"text", "entities", "reply_count"} <= set(node):
+                key = json.dumps(node, sort_keys=True, ensure_ascii=False)
+                previous = seen.setdefault(node["id"], key)
+                if previous != key:
+                    raise SystemExit("two different posts share the id %s" % node["id"])
+            for value in node.values():
+                visit(value)
+        elif isinstance(node, list):
+            for value in node:
+                visit(value)
+
+    for answer in answers.values():
+        visit(answer)
+    return len(seen)
+
+
 def main():
+    answers = build_answers()
+    distinct = check_post_ids(answers)
     os.makedirs(OUT_DIR, exist_ok=True)
     for stale in glob.glob(os.path.join(OUT_DIR, "demo_*.json")):
         os.remove(stale)
-    for name, answer in sorted(build_answers().items()):
+    for name, answer in sorted(answers.items()):
         path = os.path.join(OUT_DIR, "demo_%s.json" % name)
         with open(path, "w", encoding="utf-8", newline="\n") as handle:
             json.dump(answer, handle, ensure_ascii=False, indent=2)
             handle.write("\n")
         items = len(answer["items"]) if "items" in answer else "-"
         print("demo_%s.json  items: %s" % (name, items))
+    print("posts with distinct ids:", distinct)
 
 
 if __name__ == "__main__":

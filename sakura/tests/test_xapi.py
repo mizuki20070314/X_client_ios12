@@ -11,8 +11,18 @@ try:
     import requests
 except ImportError:  # the CI machine may not have requests
     requests = None
+try:
+    from urllib3.util import parse_url
+except ImportError:
+    parse_url = None
 
 HOME_QUERY_ID = catalog._read_entries(catalog.BUNDLE_PATH)["ops"]["HomeTimeline"]["queryId"]
+# server-design section 9, written out as in the document: the path is also the transaction-id path
+TWEET_PATH_123 = ("/i/api/1.1/strato/column/None/tweetId=123,destinationLanguage=None,"
+                  "translationSource=Some(Google),feature=None,timeout=None,onlyCached=None"
+                  "/translation/service/translateTweet")
+PROFILE_PATH_456 = ("/i/api/1.1/strato/column/None/profileUserId=456,destinationLanguage=None,"
+                    "translationSource=Some(Google)/translation/service/translateProfile")
 
 
 class XClientTests(unittest.TestCase):
@@ -373,6 +383,96 @@ class RawTests(XClientTests):
         client, transport = self.make(ts.json_response({}))
         self.assertRelay(502, "x_error", lambda: client.rest("GET", "/i/api/x.json"))
         self.assertEqual(transport.calls, [])
+
+
+class TranslateUrlTests(XClientTests):
+    """The URL that X receives is the path as written, and the transaction id is made from that same string."""
+
+    def test_the_fake_session_receives_the_tweet_path_unmodified(self):
+        client, transport = self.make(ts.json_response({"translation": "x"}))
+        client.rest("GET", TWEET_PATH_123)
+        method, url, kwargs = transport.calls[0]
+        self.assertEqual(method, "GET")
+        self.assertEqual(url, "https://x.com" + TWEET_PATH_123)
+        self.assertIsNone(kwargs["params"])
+        self.assertNotIn("data", kwargs)
+
+    def test_the_fake_session_receives_the_profile_path_unmodified(self):
+        client, transport = self.make(ts.json_response({"profileTranslation": {}}))
+        client.rest("GET", PROFILE_PATH_456)
+        self.assertEqual(transport.calls[0][1], "https://x.com" + PROFILE_PATH_456)
+
+    def test_the_transaction_id_is_made_from_the_same_path(self):
+        client, transport = self.make(ts.json_response({}))
+        with mock.patch.object(transaction, "generate_transaction_id",
+                               wraps=transaction.generate_transaction_id) as spy:
+            client.rest("GET", TWEET_PATH_123)
+        method, path = spy.call_args[0][0], spy.call_args[0][1]
+        self.assertEqual((method, path), ("GET", TWEET_PATH_123))
+        self.assertEqual(transport.calls[0][1], "https://x.com" + path)
+        self.assertIn("x-client-transaction-id", transport.calls[0][2]["headers"])
+
+    def test_plain_commas_equals_and_parentheses_are_sent(self):
+        client, transport = self.make(ts.json_response({}))
+        client.rest("GET", TWEET_PATH_123)
+        self.assertEqual(transport.sessions, 1)
+
+    def test_paths_that_requests_would_re_quote_are_refused_before_any_session(self):
+        for path in ("/i/api/x y", "/i/api/x?y=1", "i/api/x", "/i/api/x%20y", "/i/api/x#frag", "/i/api/ふ"):
+            client, transport = self.make(ts.json_response({}))
+            with self.assertRaises(ValueError, msg=path):
+                client.rest("GET", path)
+            self.assertEqual(transport.sessions, 0, path)
+
+    @unittest.skipIf(requests is None or parse_url is None, "requests or urllib3 is not installed here")
+    def test_requests_and_urllib3_leave_the_paths_as_written(self):
+        # what requests prepares offline (no session, no network), and what urllib3 would put on the request line
+        for path in (TWEET_PATH_123, PROFILE_PATH_456):
+            url = "https://x.com" + path
+            prepared = requests.Request("GET", url).prepare()
+            self.assertEqual(prepared.url, url)
+            self.assertEqual(parse_url(prepared.url).request_uri, path)
+
+    @unittest.skipIf(requests is None, "requests is not installed here")
+    def test_a_real_requests_session_sends_each_path_as_written(self):
+        from requests.adapters import BaseAdapter
+        from requests.models import Response
+
+        class CaptureAdapter(BaseAdapter):
+            """Answers every request itself: the test sees the URL requests prepared, nothing goes out."""
+
+            def __init__(self):
+                super(CaptureAdapter, self).__init__()
+                self.urls = []
+
+            def send(self, request, **kwargs):
+                self.urls.append(request.url)
+                response = Response()
+                response.status_code = 200
+                response._content = b'{"ok": true}'
+                response.headers["Content-Type"] = "application/json"
+                response.url = request.url
+                response.request = request
+                return response
+
+            def close(self):
+                pass
+
+        adapters = []
+
+        def new_session():
+            session = requests.Session()
+            session.trust_env = False  # no ~/.netrc and no proxy variables are read
+            adapter = CaptureAdapter()
+            session.mount("https://", adapter)
+            adapters.append(adapter)
+            return session
+
+        client = xapi.XClient(self.config, "account1", self.profile, session_factory=new_session)
+        client.rest("GET", TWEET_PATH_123)
+        client.rest("GET", PROFILE_PATH_456)
+        sent = [url for adapter in adapters for url in adapter.urls]
+        self.assertEqual(sent, ["https://x.com" + TWEET_PATH_123, "https://x.com" + PROFILE_PATH_456])
 
 
 class HelperTests(unittest.TestCase):

@@ -35,6 +35,18 @@ private func jsonRanges(_ json: JSON) -> [NSRange] {
     }
 }
 
+/// Drops the entities that reach past the end of their text, so that the UI can always apply their ranges.
+private func clipped(_ entities: [TextEntity], to text: String) -> [TextEntity] {
+    let length = text.utf16.count
+    return entities.filter { $0.range.location + $0.range.length <= length }
+}
+
+/// The same for the bold ranges of a notification.
+private func clippedRanges(_ ranges: [NSRange], to text: String) -> [NSRange] {
+    let length = text.utf16.count
+    return ranges.filter { $0.location + $0.length <= length }
+}
+
 // MARK: - Text
 
 enum VerifiedKind { case none, blue, business, government }
@@ -60,6 +72,29 @@ extension TextEntity {
         range = NSRange(location: start, length: end - start)
         kind = parsedKind
         value = json["v"].string ?? ""
+    }
+}
+
+// MARK: - Translation
+
+/// A translation of a post's text or of a profile's bio (api-v2.md §4). `entities` refer to `text`.
+struct Translation {
+    let text: String
+    let entities: [TextEntity]
+    let sourceLang: String          // e.g. "en"
+    let sourceLangName: String      // e.g. "英語"
+    let provider: String            // e.g. "Google"
+}
+
+extension Translation {
+    /// nil without a text; the other keys fall back to empty strings.
+    init?(json: JSON) {
+        guard let body = jsonText(json["text"]) else { return nil }
+        text = body
+        entities = clipped(jsonEntities(json["entities"]), to: body)
+        sourceLang = json["source_lang"].string ?? ""
+        sourceLangName = json["source_lang_name"].string ?? ""
+        provider = json["provider"].string ?? ""
     }
 }
 
@@ -98,6 +133,12 @@ final class User {
     var pinnedIDs: [String]
     var blockedBy: Bool
     var followRequestSent: Bool
+    // From JSON, full users only: the profile text can be translated (api-v2.md §4).
+    var bioTranslatable: Bool
+    // Runtime state (not from JSON), kept by merge(from:): the translation of the bio and what the header shows.
+    var bioTranslation: Translation? = nil
+    var showsBioTranslation = false
+    var isTranslatingBio = false
 
     static let didChange = Notification.Name("UserDidChange")
 
@@ -118,8 +159,10 @@ final class User {
         labelBadgeURL = jsonURL(json["label"]["badge"])
         isFull = json["followers"].exists
         bannerURL = jsonURL(json["banner"])
-        bio = json["bio"].string ?? ""
-        bioEntities = jsonEntities(json["bio_entities"])
+        let biography = json["bio"].string ?? ""
+        bio = biography
+        bioEntities = clipped(jsonEntities(json["bio_entities"]), to: biography)
+        bioTranslatable = json["bio_translatable"].bool ?? false
         location = json["location"].string ?? ""
         linkDisplay = jsonText(json["url"]["display"])
         linkURL = jsonURL(json["url"]["expanded"])
@@ -163,6 +206,7 @@ final class User {
         bannerURL = other.bannerURL
         bio = other.bio
         bioEntities = other.bioEntities
+        bioTranslatable = other.bioTranslatable
         location = other.location
         linkDisplay = other.linkDisplay
         linkURL = other.linkURL
@@ -378,8 +422,16 @@ final class Tweet {
     var edited: Bool
     var place: String?
     var replyLimited: Bool
+    // From JSON: the post can be translated ("ポストを翻訳", api-v2.md §4).
+    var translatable: Bool
+    // Runtime state (not from JSON), kept by merge(from:): the translation and what the row shows.
+    var translation: Translation? = nil
+    var showsTranslation = false
+    var isTranslating = false
 
     static let didChange = Notification.Name("TweetDidChange")
+    /// Posted by notifyLayoutChanged(): the layout of the post changed (its translation was shown or hidden).
+    static let layoutDidChange = Notification.Name("TweetLayoutDidChange")
 
     convenience init?(json: JSON) {
         self.init(json: json, nested: false)
@@ -390,8 +442,10 @@ final class Tweet {
         guard let id = jsonText(json["id"]), let user = User(json: json["user"]) else { return nil }
         self.id = id
         self.user = user
-        text = json["text"].string ?? ""
-        entities = jsonEntities(json["entities"])
+        let body = json["text"].string ?? ""
+        text = body
+        entities = clipped(jsonEntities(json["entities"]), to: body)
+        translatable = json["translatable"].bool ?? false
         isLong = json["long"].bool ?? false
         createdAt = jsonDate(json["created_at"]) ?? Date(timeIntervalSince1970: 0)
         replyCount = json["reply_count"].int ?? 0
@@ -450,6 +504,8 @@ final class Tweet {
         edited = other.edited
         place = other.place
         replyLimited = other.replyLimited
+        translatable = other.translatable
+        // the runtime state (translation, showsTranslation, isTranslating) is not copied: it belongs to this instance
     }
 
     var permalink: URL? {
@@ -458,6 +514,11 @@ final class Tweet {
 
     func notifyChanged() {
         NotificationCenter.default.post(name: Tweet.didChange, object: self)
+    }
+
+    /// The layout of this post changed: the timeline re-lays out its row.
+    func notifyLayoutChanged() {
+        NotificationCenter.default.post(name: Tweet.layoutDidChange, object: self)
     }
 }
 
@@ -488,8 +549,9 @@ extension NotificationEntry {
         guard let id = jsonText(json["id"]) else { return nil }
         self.id = id
         icon = jsonText(json["icon"]) ?? "bell"
-        text = json["text"].string ?? ""
-        bold = jsonRanges(json["bold"])
+        let body = json["text"].string ?? ""
+        text = body
+        bold = clippedRanges(jsonRanges(json["bold"]), to: body)
         users = Array(json["users"].array.compactMap { User(json: $0) }.prefix(8))
         tweet = Tweet(json: json["tweet"])
         time = jsonDate(json["time"])

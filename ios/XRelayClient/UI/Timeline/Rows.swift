@@ -416,9 +416,16 @@ class TimelineCellBase: UITableViewCell {
         super.touchesCancelled(touches, with: event)
     }
 
-    /// Whether the touch is on an entity of one of the cell's link labels.
+    /// Whether the touch is on an entity of one of the cell's link labels, or on its translation line.
     private func isOnLink(_ touch: UITouch) -> Bool {
         for view in contentView.subviews {
+            // the translation line is a control of its own: its taps never reach the row
+            if let control = view as? TranslationControl, !control.isHidden {
+                if control.bounds.contains(touch.location(in: control)) {
+                    return true
+                }
+                continue
+            }
             guard let label = view as? LinkLabel, !label.isHidden, let layout = label.textLayout else { continue }
             let point = touch.location(in: label)
             if label.bounds.contains(point) && layout.entity(at: point) != nil {

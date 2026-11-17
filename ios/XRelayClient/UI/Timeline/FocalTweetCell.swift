@@ -17,6 +17,9 @@ struct FocalTweetLayout {
     let replyText: NSAttributedString?
     let textFrame: CGRect?
     let text: TextLayout?
+    /// The translation line under the text (ui-spec.md §7); nil when the post has none.
+    let translationFrame: CGRect?
+    let translationText: NSAttributedString?
     let attachments: TweetAttachmentFrames
     let timeFrame: CGRect
     /// The metadata line (date and view count): one line, or two when the whole line does not fit.
@@ -76,13 +79,24 @@ extension FocalTweetLayout {
 
         var textFrame: CGRect?
         var text: TextLayout?
-        if !tweet.text.isEmpty {
-            let attributed = TweetText.attributed(tweet.text, entities: tweet.entities, font: Theme.font(17),
+        let shown = TweetTextSource.shown(for: tweet)
+        if !shown.text.isEmpty {
+            let attributed = TweetText.attributed(shown.text, entities: shown.entities, font: Theme.font(17),
                                                   color: palette.text, linkColor: palette.accent, lineSpacing: 3)
-            let layout = TextLayout(attributed, width: bodyWidth, maxLines: 0, entities: tweet.entities)
+            let layout = TextLayout(attributed, width: bodyWidth, maxLines: 0, entities: shown.entities)
             textFrame = CGRect(x: pad, y: y, width: bodyWidth, height: layout.size.height)
             text = layout
             y += layout.size.height
+        }
+
+        // the translation line: 2 pt under the text, 22 pt high in the detail (ui-spec.md §7)
+        var translationFrame: CGRect?
+        var translationText: NSAttributedString?
+        if let line = TweetTranslationLine.attributed(for: tweet, fontSize: 15) {
+            y += 2
+            translationFrame = CGRect(x: pad, y: y, width: bodyWidth, height: 22)
+            translationText = line
+            y += 22
         }
 
         let attachments = TweetAttachmentFrames.make(for: tweet, x: pad, width: bodyWidth, top: y,
@@ -125,6 +139,8 @@ extension FocalTweetLayout {
             replyText: replyText,
             textFrame: textFrame,
             text: text,
+            translationFrame: translationFrame,
+            translationText: translationText,
             attachments: attachments,
             timeFrame: timeFrame,
             meta: meta,
@@ -197,6 +213,7 @@ final class FocalTweetCell: TimelineCellBase {
     private let bodyLabel = LinkLabel(frame: .zero)
     private let attachments = TweetAttachmentViews()
     private let metaLabel = LinkLabel(frame: .zero)
+    private let translationControl = TranslationControl(frame: .zero)
     private let topRule = UIView()
     private let actionBar = FocalActionBarView(frame: .zero)
 
@@ -223,6 +240,7 @@ final class FocalTweetCell: TimelineCellBase {
         overflowButton.setImage(Icons.image(.overflow, size: TimelineSpec.overflowIconSize), for: .normal)
         overflowButton.tintColor = palette.secondaryText
         overflowButton.addTarget(self, action: #selector(overflowTapped), for: .touchUpInside)
+        translationControl.addTarget(self, action: #selector(translationTapped), for: .touchUpInside)
 
         bodyLabel.onTapEntity = { entity in Router.open(entity: entity) }
         avatar.onTap = { [weak self] in
@@ -254,7 +272,7 @@ final class FocalTweetCell: TimelineCellBase {
         }
 
         let views: [UIView] = [contextIcon, contextLabel, avatar, nameLine, handleLabel, overflowButton,
-                               followButton, replyLabel, bodyLabel, metaLabel, topRule]
+                               followButton, replyLabel, bodyLabel, metaLabel, translationControl, topRule]
         for view in views {
             contentView.addSubview(view)
         }
@@ -289,6 +307,8 @@ final class FocalTweetCell: TimelineCellBase {
         replyLabel.attributedText = layout.replyText
         bodyLabel.timelinePlace(layout.textFrame)
         bodyLabel.textLayout = layout.text
+        translationControl.timelinePlace(layout.translationFrame)
+        translationControl.captionLabel.attributedText = layout.translationText
 
         attachments.apply(tweet, frames: layout.attachments)
 
@@ -310,6 +330,7 @@ final class FocalTweetCell: TimelineCellBase {
         attachments.reset()
         bodyLabel.textLayout = nil
         metaLabel.textLayout = nil
+        translationControl.captionLabel.attributedText = nil
     }
 
     deinit {
@@ -344,6 +365,11 @@ final class FocalTweetCell: TimelineCellBase {
 
     @objc private func overflowTapped() {
         withTweet { TweetActions.showOverflowMenu(for: $0) }
+    }
+
+    /// The translation line: shows, hides or starts the translation of the post (ui-spec.md §7).
+    @objc private func translationTapped() {
+        withTweet { TweetActions.toggleTranslation($0) }
     }
 
     /// Re-applies the action bar when the post changes, as the timeline cell does.

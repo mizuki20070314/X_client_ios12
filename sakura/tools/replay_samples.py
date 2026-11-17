@@ -30,13 +30,15 @@ TWEET_KEYS = [
     "like_count", "quote_count", "bookmark_count", "view_count", "liked", "retweeted",
     "bookmarked", "media", "quote", "quote_unavailable", "card", "reply_to", "conversation_id",
     "retweeted_by", "retweet_id", "lang", "sensitive", "source", "edited", "place", "reply_limited",
+    "translatable",
 ]
 USER_KEYS = ["id", "name", "handle", "avatar", "verified", "square", "protected", "following",
              "followed_by", "blocking", "muting", "label"]
 FULL_USER_KEYS = USER_KEYS + [
     "banner", "bio", "bio_entities", "location", "url", "joined", "followers", "friends", "tweets",
-    "media_count", "likes_count", "pinned_ids", "blocked_by", "follow_request_sent",
+    "media_count", "likes_count", "pinned_ids", "blocked_by", "follow_request_sent", "bio_translatable",
 ]
+TRANSLATION_KEYS = ["text", "entities", "source_lang", "source_lang_name", "provider"]
 ITEM_KEYS = {
     "tweet": ["t", "tweet", "context", "above", "below", "focal"],
     "more": ["t", "cursor", "label"],
@@ -83,6 +85,8 @@ def _get(node, *keys):
 
 
 def classify(data):
+    if isinstance(data, dict) and ("translation" in data or isinstance(data.get("profileTranslation"), dict)):
+        return "translation"
     if _get(data, "data", "explore_page") is not None:
         return "explore"
     if _get(data, "data", "create_tweet") is not None:
@@ -240,6 +244,8 @@ def check_user(user, full, where, problems):
         return
     if not isinstance(user["bio"], str) or not isinstance(user["location"], str):
         problems.append("%s: bio/location not strings" % where)
+    if not isinstance(user["bio_translatable"], bool):
+        problems.append("%s: bio_translatable not a bool" % where)
     for key in ("followers", "friends", "tweets", "media_count", "likes_count"):
         if not isinstance(user[key], int):
             problems.append("%s: %s not an int" % (where, key))
@@ -285,6 +291,37 @@ def check_entities(entities, text, where, problems):
             problems.append("%s: empty v" % here)
 
 
+def check_text(text, entities, where, problems):
+    """Entities of a shown text, no escapes left, and no raw t.co link (api-v2 2.5, server-design 6.1)."""
+    check_entities(entities, text, where + ".entities", problems)
+    for bad in ("&amp;", "&lt;", "&gt;"):
+        if bad in text:
+            problems.append("%s: text still has %s" % (where, bad))
+    # A t.co link may stay only as the visible text of a URL entity.
+    url_spans = [(e["s"], e["e"]) for e in entities if isinstance(e, dict) and e.get("k") == "url"]
+    index = text.find(TCO)
+    while index != -1:
+        start = utf16_len(text[:index])
+        end = start + utf16_len(TCO)
+        if not any(s <= start and end <= e for s, e in url_spans):
+            problems.append("%s: raw t.co link in text at %d" % (where, start))
+        index = text.find(TCO, index + len(TCO))
+
+
+def check_translation(result, problems):
+    """api-v2 section 4: text, entities for the text, and the three source fields."""
+    if not check_keys(result, TRANSLATION_KEYS, "translation", problems):
+        return
+    text = result["text"]
+    if not isinstance(text, str) or not text:
+        problems.append("translation: empty text")
+        return
+    check_text(text, result["entities"], "translation", problems)
+    for key in ("source_lang", "source_lang_name", "provider"):
+        if not isinstance(result[key], str):
+            problems.append("translation: %s not a string" % key)
+
+
 def check_tweet(tweet, where, problems, depth=0):
     if not check_keys(tweet, TWEET_KEYS, where, problems):
         return
@@ -297,19 +334,7 @@ def check_tweet(tweet, where, problems, depth=0):
     if not isinstance(text, str):
         problems.append("%s: text not a string" % where)
         return
-    check_entities(tweet["entities"], text, where + ".entities", problems)
-    for bad in ("&amp;", "&lt;", "&gt;"):
-        if bad in text:
-            problems.append("%s: text still has %s" % (where, bad))
-    # A t.co link may stay only as the visible text of a URL entity.
-    url_spans = [(e["s"], e["e"]) for e in tweet["entities"] if isinstance(e, dict) and e.get("k") == "url"]
-    index = text.find(TCO)
-    while index != -1:
-        start = utf16_len(text[:index])
-        end = start + utf16_len(TCO)
-        if not any(s <= start and end <= e for s, e in url_spans):
-            problems.append("%s: raw t.co link in text at %d" % (where, start))
-        index = text.find(TCO, index + len(TCO))
+    check_text(text, tweet["entities"], where, problems)
     if not isinstance(tweet["created_at"], int):
         problems.append("%s: created_at type" % where)
     for key in ("reply_count", "retweet_count", "like_count", "quote_count", "bookmark_count"):
@@ -317,7 +342,7 @@ def check_tweet(tweet, where, problems, depth=0):
             problems.append("%s: %s not an int" % (where, key))
     if tweet["view_count"] is not None and not isinstance(tweet["view_count"], int):
         problems.append("%s: view_count type" % where)
-    for key in ("long", "liked", "retweeted", "bookmarked", "sensitive", "edited", "reply_limited"):
+    for key in ("long", "liked", "retweeted", "bookmarked", "sensitive", "edited", "reply_limited", "translatable"):
         if not isinstance(tweet[key], bool):
             problems.append("%s: %s not a bool" % (where, key))
     if not isinstance(tweet["conversation_id"], str) or not tweet["conversation_id"]:
@@ -508,6 +533,7 @@ def tweet_stats(items):
         stats["media"] += len(tweet.get("media") or [])
         stats["cards"] += 1 if tweet.get("card") else 0
         stats["focal"] += 1 if item.get("focal") else 0
+        stats["translatable"] += 1 if tweet.get("translatable") else 0
     return stats
 
 
@@ -517,7 +543,17 @@ def process(path, focal_override, dump_dir):
     problems = []
     name = os.path.basename(path)
     focal = focal_override or detail_focal(data)
-    if kind == "explore":
+    if kind == "translation":
+        result = normalize.normalize_translation(data)
+        if result is not None:
+            check_translation(result, problems)
+            summary = "translation: %d chars, %d entities" % (len(result["text"]), len(result["entities"]))
+        else:
+            summary = "translation: none (no usable text)"
+        kinds = Counter()
+        stats = Counter()
+        top_bottom = "-"
+    elif kind == "explore":
         result = normalize.normalize_explore(data)
         check_explore(result, problems, conversation_post_counts(data))
         summary = "tabs=%d tab=%s items=%d" % (len(result["tabs"]), result["tab"], len(result["items"]))
@@ -554,6 +590,8 @@ def process(path, focal_override, dump_dir):
         print("   kinds: " + (", ".join("%s=%d" % (k, v) for k, v in sorted(kinds.items())) or "none"))
         shown = ", ".join("%s=%d" % (k, v) for k, v in sorted(stats.items()) if v)
         print("   tweets: " + (shown or "none"))
+        tweet_items = [item for item in result["items"] if item.get("t") == "tweet"]
+        print("   translatable: %d of %d tweets" % (stats["translatable"], len(tweet_items)))
         repeats = Counter(item["tweet"]["id"] for item in result["items"] if item.get("t") == "tweet")
         repeated = ["%s x%d" % (post_id, count) for post_id, count in sorted(repeats.items()) if count > 1]
         if repeated:

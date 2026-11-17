@@ -1,0 +1,36 @@
+{
+ "profileUserId": "1000000000000000002",
+ "profileTranslation": {
+  "translation": "🙂 Writer #photo, see https://t.co/PROFILE001",
+  "language": "ja",
+  "entities": {
+   "symbols": [],
+   "hashtags": [
+    {
+     "indices": [
+      9,
+      15
+     ],
+     "text": "photo"
+    }
+   ],
+   "user_mentions": [],
+   "urls": [
+    {
+     "indices": [
+      21,
+      44
+     ],
+     "url": "https://t.co/PROFILE001",
+     "display_url": "example.org/bob",
+     "expanded_url": "https://example.org/bob"
+    }
+   ],
+   "media": [],
+   "timestamps": []
+  },
+  "sourceLanguage": "en",
+  "localizedSourceLanguage": "英語",
+  "translationSource": "Google"
+ }
+}

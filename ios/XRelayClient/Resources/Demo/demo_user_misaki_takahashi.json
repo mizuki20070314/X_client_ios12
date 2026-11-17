@@ -29,6 +29,7 @@
     "likes_count": 3300,
     "pinned_ids": [],
     "blocked_by": false,
-    "follow_request_sent": false
+    "follow_request_sent": false,
+    "bio_translatable": false
   }
 }

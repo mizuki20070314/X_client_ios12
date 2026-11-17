@@ -55,6 +55,13 @@ class FakeNormalizer(object):
             return None
         return {"id": "42", "handle": "someone", "marker": _marker(data)}
 
+    def normalize_translation(self, data, *args, **kwargs):
+        self.calls.append(("normalize_translation", args, kwargs))
+        if _marker(data) == "no-translation":
+            return None
+        return {"text": "こんにちは", "entities": [], "source_lang": "en", "source_lang_name": "英語",
+                "provider": "Google", "marker": _marker(data)}
+
     def normalize_created_tweet(self, data, *args, **kwargs):
         self.calls.append(("normalize_created_tweet", args, kwargs))
         return {"id": "999", "marker": _marker(data)}
@@ -487,6 +494,75 @@ class WriteRouteTests(RouteTestCase):
         with self.assertRaises(RelayError) as caught:
             self.run_route(post("/v2/tweet/delete", {"id": "1"}), client=client)
         self.assertEqual(caught.exception.status, 429)
+
+
+TWEET_PATH_123 = ("/i/api/1.1/strato/column/None/tweetId=123,destinationLanguage=None,"
+                  "translationSource=Some(Google),feature=None,timeout=None,onlyCached=None"
+                  "/translation/service/translateTweet")
+PROFILE_PATH_456 = ("/i/api/1.1/strato/column/None/profileUserId=456,destinationLanguage=None,"
+                    "translationSource=Some(Google)/translation/service/translateProfile")
+
+
+class TranslateRouteTests(RouteTestCase):
+    # server-design section 9: the REST paths are written out here, not taken from the code under test
+
+    def test_tweet_translate_asks_x_for_the_documented_path(self):
+        payload = self.run_route(get("/v2/tweet/translate", id="123"))
+        self.assertEqual(self.client.rest_calls, [("GET", TWEET_PATH_123, None, None, None)])
+        self.assertEqual(self.client.graphql_calls, [])
+        self.assertEqual(self.normalizer.calls, [("normalize_translation", (), {})])
+        self.assertEqual(payload["provider"], "Google")
+
+    def test_user_translate_asks_x_for_the_documented_path(self):
+        payload = self.run_route(get("/v2/user/translate", id="456"))
+        self.assertEqual(self.client.rest_calls, [("GET", PROFILE_PATH_456, None, None, None)])
+        self.assertEqual(self.client.graphql_calls, [])
+        self.assertEqual(self.normalizer.calls, [("normalize_translation", (), {})])
+        self.assertEqual(payload["text"], "こんにちは")
+
+    def test_the_answer_of_x_goes_through_normalize_translation(self):
+        client = FakeClient(rest={TWEET_PATH_123: {"marker": "x-answer"}})
+        payload = self.run_route(get("/v2/tweet/translate", id="123"), client=client)
+        self.assertEqual(payload["marker"], "x-answer")
+
+    def test_path_is_plain_text_without_percent_encoding_or_query(self):
+        self.run_route(get("/v2/tweet/translate", id="123"))
+        path = self.client.rest_calls[0][1]
+        self.assertNotIn("%", path)
+        self.assertNotIn("?", path)
+
+    def test_no_translation_is_404_on_both_routes(self):
+        for route, path, identifier in (("/v2/tweet/translate", TWEET_PATH_123, "123"),
+                                        ("/v2/user/translate", PROFILE_PATH_456, "456")):
+            client = FakeClient(rest={path: {"marker": "no-translation"}})
+            with self.assertRaises(RelayError) as caught:
+                self.run_route(get(route, id=identifier), client=client)
+            self.assertEqual((caught.exception.status, caught.exception.code), (404, "not_found"))
+            self.assertEqual(caught.exception.message, "翻訳できませんでした。")
+
+    def test_id_is_required_and_numeric_before_anything_is_sent(self):
+        client = FakeClient()
+        for route in ("/v2/tweet/translate", "/v2/user/translate"):
+            self.assertBad(get(route), client=client)
+            for bad in ("", "12a", "-1", " 12", "1" * 26, "１２"):
+                self.assertBad(get(route, id=bad), client=client)
+        self.assertEqual(client.rest_calls, [])
+        self.assertEqual(client.graphql_calls, [])
+
+    def test_id_of_25_digits_is_accepted(self):
+        digits = "9" * 25
+        self.run_route(get("/v2/user/translate", id=digits))
+        self.assertEqual(self.client.rest_calls[0][1],
+                         "/i/api/1.1/strato/column/None/profileUserId=" + digits
+                         + ",destinationLanguage=None,translationSource=Some(Google)/translation/service/translateProfile")
+
+    def test_post_is_405_on_both_routes(self):
+        for route in ("/v2/tweet/translate", "/v2/user/translate"):
+            client = FakeClient()
+            with self.assertRaises(RelayError) as caught:
+                routes.dispatch(post(route, {"id": "123"}), client, FakeNormalizer())
+            self.assertEqual((caught.exception.status, caught.exception.code), (405, "bad_request"))
+            self.assertEqual(client.rest_calls, [])
 
 
 if __name__ == "__main__":

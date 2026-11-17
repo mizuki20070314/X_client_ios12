@@ -44,7 +44,8 @@
       "2122000000000000051"
     ],
     "blocked_by": false,
-    "follow_request_sent": false
+    "follow_request_sent": false,
+    "bio_translatable": false
   },
   "badges": {
     "notifications": 5,

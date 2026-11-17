@@ -113,6 +113,19 @@ def _flag(value):
     return value is True
 
 
+# Languages that X does not offer for translation: Japanese, undetermined and special codes.
+_NOT_TRANSLATED = frozenset(("ja", "und", "zxx", "qme", "qht", "qam", "qct", "qst", "art"))
+
+
+def _can_translate(language, flagged):
+    """Whether the app offers a translation (server-design 9): X's own flag, or a language outside
+    _NOT_TRANSLATED. A missing or empty language gives no translation."""
+    if flagged is True:
+        return True
+    language = _str(language)
+    return language is not None and language not in _NOT_TRANSLATED
+
+
 def _first(*values):
     """The first value that is present (not None); X omits or nulls fields it has moved."""
     for value in values:
@@ -610,6 +623,8 @@ def normalize_user(result, full=False):
         "pinned_ids": [pid for pid in (_id(item) for item in _list(pinned)) if pid],
         "blocked_by": _flag(_first(relations.get("blocked_by"), legacy.get("blocked_by"))),
         "follow_request_sent": _flag(_first(user.get("follow_request_sent"), legacy.get("follow_request_sent"))),
+        "bio_translatable": bool(bio) and _can_translate(user.get("profile_description_language"),
+                                                         user.get("is_profile_translatable")),
     })
     return out
 
@@ -763,6 +778,7 @@ def _tweet(result, allow_repost=True, allow_quote=True):
         "edited": any(len(ids) > 1 for ids in edit_lists),
         "place": place,
         "reply_limited": restricted,
+        "translatable": bool(text) and _can_translate(legacy.get("lang"), tweet.get("is_translatable")),
     }
 
 
@@ -1144,3 +1160,33 @@ def normalize_user_response(data):
 def normalize_created_tweet(data):
     """CreateTweet answer -> the new Tweet, or None."""
     return normalize_tweet(_get(data, "data", "create_tweet", "tweet_results", "result"))
+
+
+@_guard(lambda: None)
+def normalize_translation(data):
+    """Translation answer -> api-v2 Translation (api-v2 section 4), or None when there is no usable text.
+
+    The tweet translation sits at the top level; the profile translation sits under
+    "profileTranslation". Text and entities follow the rules of 6.1 over the whole text.
+    """
+    node = _dict(data)
+    if isinstance(node.get("profileTranslation"), dict):
+        node = node["profileTranslation"]
+    state = node.get("translationState")
+    if state is not None and state != "Success":
+        return None  # X did not translate it (for example "Pending" or "Error")
+    source = node.get("translation")
+    if not isinstance(source, str) or not source.strip():
+        return None
+    containers = _dict(node.get("entities"))
+    found = _raw_entities(source, containers, _list(containers.get("media")))
+    text, entities = _assemble(_render(source, 0, len(source), found, decode=True))
+    if not text:
+        return None  # nothing left to show once the media link is gone
+    return {
+        "text": text,
+        "entities": entities,
+        "source_lang": _str(node.get("sourceLanguage")) or "",
+        "source_lang_name": _str(node.get("localizedSourceLanguage")) or "",
+        "provider": _str(node.get("translationSource")) or "",
+    }

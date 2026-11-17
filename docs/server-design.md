@@ -650,3 +650,25 @@ Run on the server from the repository checkout (`sh sakura/deploy.sh`). Steps, s
    `{"status":"ok"}` in its output.
 
 POSIX `sh` only (FreeBSD: no bash-isms, no GNU-only options).
+
+## 9. Translation
+
+- `GET /v2/tweet/translate?id=ID` → REST `GET
+  /i/api/1.1/strato/column/None/tweetId=<ID>,destinationLanguage=None,translationSource=Some(Google),feature=None,timeout=None,onlyCached=None/translation/service/translateTweet`
+  → `{"translation": "…", "entities": {"urls": […], "user_mentions": […], "hashtags": […], "symbols": […], "media": […]},
+  "translationState": "Success", "sourceLanguage": "en", "localizedSourceLanguage": "英語", "destinationLanguage": "ja",
+  "translationSource": "Google"}`.
+- `GET /v2/user/translate?id=ID` → REST `GET
+  /i/api/1.1/strato/column/None/profileUserId=<ID>,destinationLanguage=None,translationSource=Some(Google)/translation/service/translateProfile`
+  → `{"profileUserId": "…", "profileTranslation": {"translation": "…", "language": "ja", "entities": {…},
+  "sourceLanguage": "en", "localizedSourceLanguage": "英語", "translationSource": "Google"}}`.
+- The path (with its commas, `=` and parentheses, exactly as written, not percent-encoded) is also the path used for
+  the transaction id.
+- `normalize.normalize_translation(data)` → the Translation object of api-v2.md §4, or `None` when there is no
+  non-empty `translation` (also when `translationState` is present and not `"Success"`). It accepts both shapes
+  (top level, or under `profileTranslation`). Text and entities follow the text rules of §6.1 (whole text as range;
+  media entities emit nothing). `None` → the route answers `RelayError(404, "not_found", "翻訳できませんでした。")`.
+- `translatable` (Tweet): the final `text` is not empty and (`is_translatable` of the tweet result is true, or
+  `legacy.lang` is none of `ja`, `und`, `zxx`, `qme`, `qht`, `qam`, `qct`, `qst`, `art`, empty).
+  `bio_translatable` (full user): `bio` not empty and (`is_profile_translatable` is true, or
+  `profile_description_language` is set and none of those codes).

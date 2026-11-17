@@ -320,3 +320,19 @@ All take a JSON body and answer `{"ok": true}` plus the keys listed.
 |-------|--------|
 | `GET /healthz` | `{"status": "ok"}` (no key needed) |
 | `GET /profiles` | `{"profiles": ["account1"]}` (used by the app's connection test) |
+
+## 4. Translation
+
+`Tweet` has one more key: `"translatable": true` when the app should offer "ポストを翻訳" (the post has text and is not
+written in Japanese). A full user has `"bio_translatable": true` in the same sense for the profile text.
+
+| Route | Parameters | Answer |
+|-------|------------|--------|
+| `GET /v2/tweet/translate` | `id` (required) | Translation |
+| `GET /v2/user/translate` | `id` (user id, required) | Translation (of the profile text) |
+
+```json
+{"text": "translated text, ready to display", "entities": [], "source_lang": "en", "source_lang_name": "英語", "provider": "Google"}
+```
+
+`entities` are Entity objects (§2.2) for `text`. When X has no translation the answer is `404 not_found`.

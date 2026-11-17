@@ -1,0 +1,14 @@
+{
+  "text": "長いハイキングを終えたところです。頂上からの眺めは一歩一歩の価値がありました！ #hiking",
+  "entities": [
+    {
+      "s": 40,
+      "e": 47,
+      "k": "hashtag",
+      "v": "hiking"
+    }
+  ],
+  "source_lang": "en",
+  "source_lang_name": "英語",
+  "provider": "Google"
+}

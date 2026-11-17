@@ -80,6 +80,30 @@ enum TweetActions {
         }
     }
 
+    /// Translates the post on first use, then alternates between the translation and the original. A tap while the
+    /// request is on its way is ignored; a refusal (for example 404 not_found) shows its error as a toast.
+    static func toggleTranslation(_ tweet: Tweet) {
+        guard !tweet.isTranslating else { return }
+        if tweet.translation != nil {
+            tweet.showsTranslation.toggle()
+            tweet.notifyLayoutChanged()
+            return
+        }
+        tweet.isTranslating = true
+        tweet.notifyLayoutChanged()
+        RelayClient.shared.translateTweet(id: tweet.id) { result in
+            tweet.isTranslating = false
+            switch result {
+            case .success(let translation):
+                tweet.translation = translation
+                tweet.showsTranslation = true
+            case .failure(let error):
+                Toast.show(error.localizedDescription)
+            }
+            tweet.notifyLayoutChanged()
+        }
+    }
+
     /// Copy the link, or share it through the system sheet.
     static func showShareMenu(for tweet: Tweet) {
         guard let url = tweet.permalink else { return }
@@ -237,6 +261,29 @@ enum UserActions {
                 user.notifyChanged()
             }
             Toast.show(error.localizedDescription)
+        }
+    }
+
+    /// The same for the profile text: translated on first use, then the original and the translation alternate.
+    static func toggleBioTranslation(_ user: User) {
+        guard !user.isTranslatingBio else { return }
+        if user.bioTranslation != nil {
+            user.showsBioTranslation.toggle()
+            user.notifyChanged()
+            return
+        }
+        user.isTranslatingBio = true
+        user.notifyChanged()
+        RelayClient.shared.translateUser(id: user.id) { result in
+            user.isTranslatingBio = false
+            switch result {
+            case .success(let translation):
+                user.bioTranslation = translation
+                user.showsBioTranslation = true
+            case .failure(let error):
+                Toast.show(error.localizedDescription)
+            }
+            user.notifyChanged()
         }
     }
 

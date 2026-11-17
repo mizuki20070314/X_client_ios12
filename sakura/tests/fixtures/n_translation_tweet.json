@@ -1,0 +1,44 @@
+{
+ "translation": "😀 @bob_sample wrote https://t.co/AAAAAAAAAA today https://t.co/MMMMMMMMMM",
+ "entities": {
+  "symbols": [],
+  "hashtags": [],
+  "user_mentions": [
+   {
+    "indices": [
+     2,
+     13
+    ],
+    "screen_name": "bob_sample",
+    "name": "Bob Sample",
+    "id_str": "1000000000000000002"
+   }
+  ],
+  "urls": [
+   {
+    "indices": [
+     20,
+     43
+    ],
+    "url": "https://t.co/AAAAAAAAAA",
+    "display_url": "example.com/a",
+    "expanded_url": "https://example.com/a"
+   }
+  ],
+  "media": [
+   {
+    "indices": [
+     50,
+     73
+    ],
+    "url": "https://t.co/MMMMMMMMMM"
+   }
+  ],
+  "timestamps": []
+ },
+ "translationState": "Success",
+ "sourceLanguage": "en",
+ "localizedSourceLanguage": "英語",
+ "destinationLanguage": "ja",
+ "translationSource": "Google"
+}

@@ -79,7 +79,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "time": 1794822900,
       "url": "https://x.com/yamada_demo/status/2122000000000000052"
@@ -170,7 +171,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "time": 1794819900,
       "url": null
@@ -287,7 +289,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "time": 1794812700,
       "url": null
@@ -377,7 +380,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "time": 1794805500,
       "url": null
@@ -594,7 +598,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "time": 1794791100,
       "url": null
@@ -648,7 +653,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -704,7 +710,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,

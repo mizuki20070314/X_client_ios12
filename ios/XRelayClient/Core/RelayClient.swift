@@ -168,6 +168,20 @@ final class RelayClient {
         }
     }
 
+    // MARK: - translation (api-v2.md §4): "not_found" when X has no translation
+
+    func translateTweet(id: String, completion: @escaping (Result<Translation, Error>) -> Void) {
+        perform(method: "GET", path: "/v2/tweet/translate", query: ["id": id], body: nil) { result in
+            completion(Self.translationResult(result))
+        }
+    }
+
+    func translateUser(id: String, completion: @escaping (Result<Translation, Error>) -> Void) {
+        perform(method: "GET", path: "/v2/user/translate", query: ["id": id], body: nil) { result in
+            completion(Self.translationResult(result))
+        }
+    }
+
     // MARK: - writes (`on: false` undoes the action; repeating an action in effect is a success)
 
     func setLike(tweetID: String, on: Bool, completion: @escaping (Error?) -> Void) {
@@ -418,6 +432,18 @@ final class RelayClient {
                 return .failure(APIError.invalidResponse)
             }
             return .success(TweetStore.shared.intern(user))
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+
+    private static func translationResult(_ result: Result<JSON, Error>) -> Result<Translation, Error> {
+        switch result {
+        case .success(let json):
+            guard let translation = Translation(json: json) else {
+                return .failure(APIError.invalidResponse)
+            }
+            return .success(translation)
         case .failure(let error):
             return .failure(error)
         }

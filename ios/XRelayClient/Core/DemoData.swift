@@ -40,6 +40,9 @@ enum DemoData {
             return file("bookmarks")
         case "/v2/explore":
             return file("explore")
+        case "/v2/tweet/translate", "/v2/user/translate":
+            // one translation for every post and profile in the demo (it has no times, so it is not shifted)
+            return file("translate")
         case "/v2/tweet/create":
             return Data("{\"ok\":true,\"tweet\":null}".utf8)
         case "/v2/tweet/delete", "/v2/tweet/like", "/v2/tweet/retweet", "/v2/tweet/bookmark",

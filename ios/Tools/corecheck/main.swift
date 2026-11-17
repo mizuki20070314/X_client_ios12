@@ -1,9 +1,11 @@
 import Foundation
 
 // corecheck: runs the Foundation-only part of Core on Linux. The built-in checks cover Format, TwitterText, the URL
-// rules of Media and User, TweetStore interning and tolerant parsing. Each JSON file given as an argument is parsed
-// as the shape its top-level keys name: "tabs" -> ExplorePage, "items" -> TimelinePage, "user" -> User (and Badges
-// when "badges" is there), "notifications" -> Badges. Exit status 1 when a check fails.
+// rules of Media and User, TweetStore interning, tolerant parsing and the translation state (a translation survives
+// merges). Each JSON file given as an argument is parsed as the shape its top-level keys name: "tabs" -> ExplorePage,
+// "items" -> TimelinePage, "user" -> User (and Badges when "badges" is there), "notifications" -> Badges,
+// "provider" -> Translation. The entity ranges of every file are checked on the raw JSON, before the models clip
+// anything. Exit status 1 when a check fails.
 
 var checkCount = 0
 var failureCount = 0
@@ -172,32 +174,145 @@ func checkStoreAndParsing() {
     expectEqual(parse("{\"n\":\"12\"}")["n"].int ?? -1, 12, "numeric string counts as int")
 }
 
+// MARK: - Translation state (docs/ui-spec.md §7)
+
+func checkTranslationState() {
+    let store = TweetStore.shared
+
+    // a post and a newer copy of it: the translation the screen holds survives the merge, translatable is merged
+    let shown = parse("{\"id\":\"9101\",\"user\":{\"id\":\"1101\",\"name\":\"翻訳 太郎\",\"handle\":\"translate_demo\"},\"text\":\"Hello\",\"created_at\":1794823000,\"like_count\":1,\"translatable\":false}")
+    let newer = parse("{\"id\":\"9101\",\"user\":{\"id\":\"1101\",\"name\":\"翻訳 太郎\",\"handle\":\"translate_demo\"},\"text\":\"Hello again\",\"created_at\":1794823000,\"like_count\":7,\"translatable\":true}")
+    guard let original = Tweet(json: shown), let fresh = Tweet(json: newer) else {
+        expect(false, "translation test posts parse")
+        return
+    }
+    let held = store.intern(original)
+    held.translation = Translation(json: parse("{\"text\":\"こんにちは\",\"entities\":[],\"source_lang\":\"en\",\"source_lang_name\":\"英語\",\"provider\":\"Google\"}"))
+    held.showsTranslation = true
+    held.isTranslating = true
+    let again = store.intern(fresh)
+    expect(again === held, "the newer copy merges into the instance that holds the translation")
+    expect(again.translatable, "translatable is merged from the newer copy")
+    expectEqual(again.likeCount, 7, "the counts are merged too")
+    expectEqual(again.translation?.text ?? "", "こんにちは", "the translation survives the merge")
+    expect(again.showsTranslation && again.isTranslating, "showsTranslation and isTranslating survive the merge")
+    expect(fresh.translation == nil && !fresh.showsTranslation && !fresh.isTranslating, "the newer copy never carries runtime state")
+
+    // notifyLayoutChanged posts Tweet.layoutDidChange with the post as its object
+    var layoutPosts: [AnyObject] = []
+    let observer = NotificationCenter.default.addObserver(forName: Tweet.layoutDidChange, object: nil, queue: nil) { note in
+        if let object = note.object {
+            layoutPosts.append(object as AnyObject)
+        }
+    }
+    again.notifyLayoutChanged()
+    NotificationCenter.default.removeObserver(observer)
+    expect(layoutPosts.count == 1 && layoutPosts.first === again, "notifyLayoutChanged posts Tweet.layoutDidChange for the post")
+
+    // the profile text: bio_translatable comes from full copies only, and the bio translation survives every merge
+    guard let fullBio = User(json: parse("{\"id\":\"1102\",\"handle\":\"bio_demo\",\"name\":\"Bio Demo\",\"bio\":\"Hi\",\"followers\":3,\"bio_translatable\":true}")),
+          let basicBio = User(json: parse("{\"id\":\"1102\",\"handle\":\"bio_demo\",\"name\":\"Bio Demo\"}")) else {
+        expect(false, "bio test users parse")
+        return
+    }
+    let heldUser = store.intern(fullBio)
+    heldUser.bioTranslation = Translation(json: parse("{\"text\":\"自己紹介\",\"entities\":[],\"source_lang\":\"en\",\"source_lang_name\":\"英語\",\"provider\":\"Google\"}"))
+    heldUser.showsBioTranslation = true
+    heldUser.isTranslatingBio = true
+    let sameUser = store.intern(basicBio)
+    expect(sameUser === heldUser && sameUser.bioTranslatable, "a basic copy keeps bio_translatable of the full profile")
+    expectEqual(sameUser.bioTranslation?.text ?? "", "自己紹介", "the bio translation survives a basic copy")
+    expect(sameUser.showsBioTranslation && sameUser.isTranslatingBio, "bio display state survives a basic copy")
+    if let fullOff = User(json: parse("{\"id\":\"1102\",\"handle\":\"bio_demo\",\"name\":\"Bio Demo\",\"bio\":\"Hi\",\"followers\":4,\"bio_translatable\":false}")) {
+        let merged = store.intern(fullOff)
+        expect(merged === heldUser && !merged.bioTranslatable, "a newer full copy merges bio_translatable")
+        expectEqual(merged.bioTranslation?.text ?? "", "自己紹介", "the bio translation still survives the full copy")
+    } else {
+        expect(false, "full copy with bio_translatable false parses")
+    }
+
+    // entities that reach past their text are dropped, so the UI can always apply their ranges
+    let clippedTranslation = Translation(json: parse("{\"text\":\"abc\",\"entities\":[{\"s\":0,\"e\":2,\"k\":\"url\",\"v\":\"x\"},{\"s\":2,\"e\":9,\"k\":\"url\",\"v\":\"y\"}],\"provider\":\"Google\"}"))
+    expectEqual(clippedTranslation?.entities.count ?? -1, 1, "an entity past the end of its text is dropped")
+    expect(Translation(json: parse("{\"entities\":[]}")) == nil, "a translation without text is nil")
+}
+
 // MARK: - Demo and captured files
 
-func checkTweetEntities(_ tweet: Tweet, name: String) {
-    let text = NSString(string: tweet.text)
+/// The entity ranges and the quote rule of a raw answer, checked before the models clip anything: every range inside
+/// its text, in order and not overlapping, the visible text of a mention, hashtag or cashtag equal to its value, the
+/// bold ranges of a notification inside its text, and no quoted post with a quote of its own.
+func checkRaw(_ value: Any, name: String) {
+    if let dictionary = value as? [String: Any] {
+        if let text = dictionary["text"] as? String, let entities = dictionary["entities"] as? [Any] {
+            checkRawRanges(text: text, entities: entities, name: name)
+        }
+        if let bio = dictionary["bio"] as? String, let entities = dictionary["bio_entities"] as? [Any] {
+            checkRawRanges(text: bio, entities: entities, name: name + " (bio)")
+        }
+        if let text = dictionary["text"] as? String, let bold = dictionary["bold"] as? [Any] {
+            checkRawBold(text: text, bold: bold, name: name)
+        }
+        if let quoted = dictionary["quote"] as? [String: Any], let nested = quoted["quote"], !(nested is NSNull) {
+            expect(false, "\(name): a quoted post has a quote of its own")
+        }
+        for child in dictionary.values {
+            checkRaw(child, name: name)
+        }
+    } else if let array = value as? [Any] {
+        for child in array {
+            checkRaw(child, name: name)
+        }
+    }
+}
+
+func checkRawRanges(text: String, entities: [Any], name: String) {
+    let units = text.utf16.count
+    let visibleText = NSString(string: text)
     var previousEnd = 0
-    for entity in tweet.entities {
+    for raw in entities {
+        guard let entity = TextEntity(json: JSON(raw)) else {
+            expect(false, "\(name): an entity is unusable: \(raw)")
+            continue
+        }
         let start = entity.range.location
         let end = start + entity.range.length
-        expect(start >= previousEnd && end <= text.length, "\(name) \(tweet.id): entity \(start)..<\(end) lies inside the text (\(text.length) UTF-16 units) and does not overlap")
+        expect(start >= previousEnd && end <= units,
+               "\(name): entity \(start)..<\(end) lies inside the text (\(units) UTF-16 units) and does not overlap")
         previousEnd = max(previousEnd, end)
-        guard end <= text.length else { continue }
-        let visible = text.substring(with: entity.range)
+        guard end <= units else { continue }
+        let visible = visibleText.substring(with: entity.range)
         switch entity.kind {
         case .mention:
-            expect(visible == "@" + entity.value, "\(name) \(tweet.id): mention shows @\(entity.value), got \(visible)")
+            expect(visible == "@" + entity.value, "\(name): mention shows @\(entity.value), got \(visible)")
         case .hashtag:
-            expect(visible == "#" + entity.value, "\(name) \(tweet.id): hashtag shows #\(entity.value), got \(visible)")
+            expect(visible == "#" + entity.value, "\(name): hashtag shows #\(entity.value), got \(visible)")
         case .cashtag:
-            expect(visible == "$" + entity.value, "\(name) \(tweet.id): cashtag shows $\(entity.value), got \(visible)")
+            expect(visible == "$" + entity.value, "\(name): cashtag shows $\(entity.value), got \(visible)")
         case .url:
             break
         }
     }
-    expect(tweet.quote?.quote == nil, "\(name) \(tweet.id): a quoted post has no quote of its own")
+}
+
+func checkRawBold(text: String, bold: [Any], name: String) {
+    let units = text.utf16.count
+    for raw in bold {
+        let pair = JSON(raw)
+        guard let start = pair[0].int, let end = pair[1].int, start >= 0, end >= start, end <= units else {
+            expect(false, "\(name): bold range \(raw) lies inside the text (\(units) UTF-16 units)")
+            continue
+        }
+    }
+}
+
+/// The flags of a post: a translatable post has text and is not written in Japanese (api-v2.md §4).
+func checkTweetFlags(_ tweet: Tweet, name: String) {
+    if tweet.translatable {
+        expect(!tweet.text.isEmpty && tweet.lang != "ja", "\(name) \(tweet.id): a translatable post has text and is not Japanese")
+    }
     if let quote = tweet.quote {
-        checkTweetEntities(quote, name: name)
+        checkTweetFlags(quote, name: name)
     }
 }
 
@@ -222,7 +337,7 @@ func summarizeTimeline(_ root: JSON, name: String) {
         case .tweet(let entry):
             counts["tweet", default: 0] += 1
             posts.append(entry.tweet)
-            checkTweetEntities(entry.tweet, name: name)
+            checkTweetFlags(entry.tweet, name: name)
         case .more:
             counts["more", default: 0] += 1
         case .header:
@@ -234,7 +349,7 @@ func summarizeTimeline(_ root: JSON, name: String) {
         case .notification(let entry):
             counts["notification", default: 0] += 1
             if let tweet = entry.tweet {
-                checkTweetEntities(tweet, name: name)
+                checkTweetFlags(tweet, name: name)
             }
         case .trend:
             counts["trend", default: 0] += 1
@@ -260,6 +375,9 @@ func summarize(path: String) {
         expect(false, "\(name) is a JSON object")
         return
     }
+    if let raw = root.raw {
+        checkRaw(raw, name: name)
+    }
     if keys.contains("tabs") {
         let explore = ExplorePage(json: root)
         let labels = explore.tabs.map { $0.id }.joined(separator: ", ")
@@ -280,6 +398,15 @@ func summarize(path: String) {
     } else if keys.contains("notifications") {
         let badges = Badges(json: root)
         print("\(name): badges, notifications \(badges.notifications), messages \(badges.messages)")
+    } else if keys.contains("provider") {
+        guard let translation = Translation(json: root) else {
+            expect(false, "\(name) is a translation")
+            return
+        }
+        // Translation drops the entities that reach past its text; none may be dropped in the demo answer
+        expectEqual(translation.entities.count, root["entities"].array.count, "\(name): every entity lies inside the translated text")
+        let head = String(translation.text.prefix(40))
+        print("\(name): translation from \(translation.sourceLangName) (\(translation.sourceLang)) by \(translation.provider), \(translation.entities.count) entities: \(head)")
     } else {
         expect(false, "\(name) has a known shape")
     }
@@ -291,6 +418,7 @@ checkFormat()
 checkTwitterText()
 checkMediaAndAvatars()
 checkStoreAndParsing()
+checkTranslationState()
 
 let files = Array(CommandLine.arguments.dropFirst())
 if files.isEmpty {

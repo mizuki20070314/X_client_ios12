@@ -54,7 +54,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -105,7 +106,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -156,7 +158,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -216,7 +219,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -267,7 +271,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,

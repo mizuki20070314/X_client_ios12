@@ -24,12 +24,13 @@ TWEET_KEYS = [
     "like_count", "quote_count", "bookmark_count", "view_count", "liked", "retweeted",
     "bookmarked", "media", "quote", "quote_unavailable", "card", "reply_to", "conversation_id",
     "retweeted_by", "retweet_id", "lang", "sensitive", "source", "edited", "place", "reply_limited",
+    "translatable",
 ]
 USER_KEYS = ["id", "name", "handle", "avatar", "verified", "square", "protected", "following",
              "followed_by", "blocking", "muting", "label"]
 FULL_USER_KEYS = USER_KEYS + [
     "banner", "bio", "bio_entities", "location", "url", "joined", "followers", "friends", "tweets",
-    "media_count", "likes_count", "pinned_ids", "blocked_by", "follow_request_sent",
+    "media_count", "likes_count", "pinned_ids", "blocked_by", "follow_request_sent", "bio_translatable",
 ]
 UNAVAILABLE = "このポストは表示できません。"
 
@@ -1399,6 +1400,186 @@ class TimeAndKeyTests(unittest.TestCase):
         card = n.normalize_tweet(tweet_result("c", leg=legacy("c"), card=card_of("summary", [
             bv_string("card_url", "https://t.co/Z"), bv_string("title", "T")])))
         self.assertEqual(sorted(card["card"].keys()), sorted(["type", "url", "domain", "title", "description", "image", "poll"]))
+
+
+def translatable_of(text, lang="en", is_translatable=None):
+    """translatable of a tweet with the given text and legacy.lang (None: no lang key at all)."""
+    leg = legacy(text)
+    if lang is None:
+        leg.pop("lang")
+    else:
+        leg["lang"] = lang
+    node = tweet_result(text, leg=leg)
+    if is_translatable is not None:
+        node["is_translatable"] = is_translatable
+    return n.normalize_tweet(node)["translatable"]
+
+
+class TranslationTests(unittest.TestCase):
+    """normalize_translation: both answer shapes, the text rules over the whole text, None cases."""
+
+    def test_tweet_translation_with_offsets_after_an_emoji(self):
+        out = n.normalize_translation(load_fixture("n_translation_tweet.json"))
+        self.assertEqual(out, {
+            "text": "\U0001F600 @bob_sample wrote example.com/a today",
+            "entities": [
+                # the emoji is 2 UTF-16 units and the space 1, so the mention starts at 3
+                {"s": 3, "e": 14, "k": "mention", "v": "bob_sample"},
+                # 3 + "@bob_sample" (11) + " wrote " (7) = 21; "example.com/a" is 13 units
+                {"s": 21, "e": 34, "k": "url", "v": "https://example.com/a"},
+            ],
+            "source_lang": "en",
+            "source_lang_name": "英語",
+            "provider": "Google",
+        })
+
+    def test_profile_translation_shape(self):
+        out = n.normalize_translation(load_fixture("n_translation_profile.json"))
+        self.assertEqual(out, {
+            "text": "\U0001F642 Writer #photo, see example.org/bob",
+            "entities": [
+                # emoji 2 + space 1 + "Writer " 7 = 10; "#photo" is 6 units
+                {"s": 10, "e": 16, "k": "hashtag", "v": "photo"},
+                # "#photo" ends at 16, ", see " is 6 units, "example.org/bob" is 15 units
+                {"s": 22, "e": 37, "k": "url", "v": "https://example.org/bob"},
+            ],
+            "source_lang": "en",
+            "source_lang_name": "英語",
+            "provider": "Google",
+        })
+
+    def test_the_whole_text_is_the_range(self):
+        # A leading mention is shown (no reply prefix is hidden) and a link at the end stays
+        # (a translation has no card or quoted post to repeat).
+        data = {
+            "translation": "@bob_sample hi https://t.co/AAAAAAAAAA",
+            "entities": {
+                "user_mentions": [{"indices": [0, 11], "screen_name": "bob_sample"}],
+                "urls": [{"indices": [15, 38], "url": "https://t.co/AAAAAAAAAA",
+                          "display_url": "example.com/a", "expanded_url": "https://example.com/a"}],
+            },
+        }
+        out = n.normalize_translation(data)
+        self.assertEqual(out["text"], "@bob_sample hi example.com/a")
+        self.assertEqual(out["entities"], [
+            {"s": 0, "e": 11, "k": "mention", "v": "bob_sample"},
+            {"s": 15, "e": 28, "k": "url", "v": "https://example.com/a"},
+        ])
+
+    def test_escapes_are_decoded(self):
+        self.assertEqual(n.normalize_translation({"translation": "A &amp; B &lt;3"})["text"], "A & B <3")
+
+    def test_missing_source_fields_are_empty_strings(self):
+        out = n.normalize_translation({"translation": "x"})
+        self.assertEqual((out["source_lang"], out["source_lang_name"], out["provider"]), ("", "", ""))
+
+    def test_entities_of_another_shape_are_ignored(self):
+        out = n.normalize_translation({"translation": "plain text", "entities": "not a dict"})
+        self.assertEqual(out["text"], "plain text")
+        self.assertEqual(out["entities"], [])
+
+    def test_none_when_the_state_is_not_success(self):
+        for state in ("Pending", "Error", "Unavailable"):
+            with self.subTest(state=state):
+                self.assertIsNone(n.normalize_translation({"translation": "text", "translationState": state}))
+        self.assertEqual(n.normalize_translation({"translation": "text", "translationState": "Success"})["text"], "text")
+        self.assertEqual(n.normalize_translation({"translation": "text"})["text"], "text")
+
+    def test_none_for_a_missing_or_blank_translation(self):
+        for data in ({}, {"translation": ""}, {"translation": "   \n"}, {"translation": None},
+                     {"translation": 5}, {"translation": {"text": "x"}}):
+            with self.subTest(data=data):
+                self.assertIsNone(n.normalize_translation(data))
+
+    def test_none_when_only_a_media_link_is_left(self):
+        # The media emits nothing, so there is no text to show.
+        data = {"translation": "https://t.co/MMMMMMMMMM",
+                "entities": {"media": [{"indices": [0, 23], "url": "https://t.co/MMMMMMMMMM"}]}}
+        self.assertIsNone(n.normalize_translation(data))
+
+    def test_none_for_junk(self):
+        for junk in (None, 0, "x", [], [None], {"profileTranslation": "x"}, {"profileTranslation": None},
+                     {"data": {"translation": "x"}}):
+            with self.subTest(junk=junk):
+                self.assertIsNone(n.normalize_translation(junk))
+
+
+class TranslatableTests(unittest.TestCase):
+    """translatable (Tweet) and bio_translatable (full user): server-design 9."""
+
+    def test_tweet_cases(self):
+        cases = [
+            # (text, legacy.lang (None: absent), is_translatable (None: absent), expected)
+            ("hello", "en", None, True),
+            ("hello", "fr", None, True),        # any language outside the list
+            ("hello", "ko", None, True),
+            ("こんにちは", "ja", None, False),   # Japanese is not offered
+            ("hello", "und", None, False),
+            ("hello", "zxx", None, False),
+            ("hello", "qme", None, False),
+            ("hello", "art", None, False),
+            ("hello", "", None, False),         # empty language
+            ("hello", None, None, False),       # no language at all
+            ("", "en", None, False),            # no text
+            ("", "en", True, False),            # no text wins over X's flag
+            ("hello", "en", False, True),       # X's flag being false does not block a language
+            ("hello", "ja", True, True),        # X flags it, although the language is Japanese
+        ]
+        for text, lang, flag, expected in cases:
+            with self.subTest(text=text, lang=lang, flag=flag):
+                self.assertIs(translatable_of(text, lang, flag), expected)
+
+    def test_repost_uses_the_language_of_the_original(self):
+        original = tweet_result("Hello there", tid="2000000000000000401", leg=legacy("Hello there", lang="en"))
+        repost = tweet_result("RT @x: Hello there", tid="2000000000000000402",
+                              leg=legacy("RT @x: Hello there", lang="ja",
+                                         retweeted_status_result={"result": original}))
+        self.assertIs(n.normalize_tweet(repost)["translatable"], True)
+
+    def test_bio_cases(self):
+        cases = [
+            # (bio, profile_description_language (None: absent), is_profile_translatable (None: absent), expected)
+            ("Hello", "en", None, True),
+            ("Hello", "ko", None, True),
+            ("Hello", "ja", None, False),
+            ("Hello", "und", None, False),
+            ("Hello", "zxx", None, False),
+            ("Hello", "", None, False),
+            ("Hello", None, None, False),
+            ("Hello", "ja", True, True),        # X says the profile is translatable
+            ("Hello", "en", False, True),
+            ("", "en", None, False),            # empty bio
+            ("", "ja", True, False),            # empty bio wins over X's flag
+        ]
+        for bio, language, flag, expected in cases:
+            node = user_result(profile_bio={"description": bio, "entities": {"description": {}}})
+            if language is not None:
+                node["profile_description_language"] = language
+            if flag is not None:
+                node["is_profile_translatable"] = flag
+            with self.subTest(bio=bio, language=language, flag=flag):
+                self.assertIs(n.normalize_user(node, full=True)["bio_translatable"], expected)
+
+    def test_only_full_users_carry_bio_translatable(self):
+        self.assertNotIn("bio_translatable", n.normalize_user(user_result(profile_description_language="en")))
+
+    def test_every_tweet_and_full_user_carries_a_boolean_flag(self):
+        # Plain posts and their quoted posts, from the home fixture.
+        result = n.normalize_timeline(load_fixture("n_home_timeline.json"))
+        tweets = []
+        for item in items_of(result):
+            if item["t"] == "tweet":
+                tweets.append(item["tweet"])
+                if item["tweet"]["quote"]:
+                    tweets.append(item["tweet"]["quote"])
+        self.assertTrue(tweets)
+        for tweet in tweets:
+            self.assertIsInstance(tweet["translatable"], bool)
+        # A user in a timeline is a full user.
+        user_item = n.normalize_timeline(answer(add(item_entry("user-1", {
+            "itemType": "TimelineUser", "__typename": "TimelineUser",
+            "user_results": {"result": user_result(uid="1000000000000000921")}}))))
+        self.assertIsInstance(items_of(user_item)[0]["user"]["bio_translatable"], bool)
 
 
 if __name__ == "__main__":

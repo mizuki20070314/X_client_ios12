@@ -45,7 +45,67 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
+      },
+      "context": null,
+      "above": false,
+      "below": false,
+      "focal": false
+    },
+    {
+      "t": "tweet",
+      "tweet": {
+        "id": "2122000000000000090",
+        "user": {
+          "id": "100017",
+          "name": "Alex Demo",
+          "handle": "alex_demo",
+          "avatar": "demo://avatar/100017",
+          "verified": null,
+          "square": false,
+          "protected": false,
+          "following": false,
+          "followed_by": false,
+          "blocking": false,
+          "muting": false,
+          "label": null
+        },
+        "text": "Just finished a long hike. The view from the top was worth every step! #hiking",
+        "entities": [
+          {
+            "s": 71,
+            "e": 78,
+            "k": "hashtag",
+            "v": "hiking"
+          }
+        ],
+        "long": false,
+        "created_at": 1794822900,
+        "reply_count": 1,
+        "retweet_count": 0,
+        "like_count": 4,
+        "quote_count": 0,
+        "bookmark_count": 0,
+        "view_count": 812,
+        "liked": false,
+        "retweeted": false,
+        "bookmarked": false,
+        "media": [],
+        "quote": null,
+        "quote_unavailable": null,
+        "card": null,
+        "reply_to": null,
+        "conversation_id": "2122000000000000090",
+        "retweeted_by": null,
+        "retweet_id": null,
+        "lang": "en",
+        "sensitive": false,
+        "source": null,
+        "edited": false,
+        "place": null,
+        "reply_limited": false,
+        "translatable": true
       },
       "context": null,
       "above": false,
@@ -105,7 +165,8 @@
         "source": "Twitter for Android",
         "edited": false,
         "place": "神奈川県 逗子市",
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -173,7 +234,8 @@
         "source": null,
         "edited": false,
         "place": "東京 世田谷区",
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -249,7 +311,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -333,7 +396,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -396,7 +460,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -456,7 +521,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -524,7 +590,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -592,7 +659,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -682,7 +750,8 @@
           "source": "Twitter for Android",
           "edited": false,
           "place": "神奈川県 逗子市",
-          "reply_limited": false
+          "reply_limited": false,
+          "translatable": false
         },
         "quote_unavailable": null,
         "card": null,
@@ -695,7 +764,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -776,7 +846,8 @@
           "source": null,
           "edited": false,
           "place": null,
-          "reply_limited": false
+          "reply_limited": false,
+          "translatable": false
         },
         "quote_unavailable": null,
         "card": null,
@@ -789,7 +860,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -840,7 +912,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -903,7 +976,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -966,7 +1040,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1029,7 +1104,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1106,7 +1182,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1179,7 +1256,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1237,7 +1315,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1301,7 +1380,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1357,7 +1437,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1408,7 +1489,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": {
         "k": "text",
@@ -1468,7 +1550,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1519,7 +1602,8 @@
         "source": null,
         "edited": false,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1580,7 +1664,8 @@
         "source": "Twitter for Android",
         "edited": true,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,
@@ -1631,7 +1716,8 @@
         "source": null,
         "edited": true,
         "place": null,
-        "reply_limited": false
+        "reply_limited": false,
+        "translatable": false
       },
       "context": null,
       "above": false,

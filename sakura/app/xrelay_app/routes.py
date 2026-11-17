@@ -11,6 +11,13 @@ from xrelay_app.errors import RelayError
 ALREADY_DONE_CODES = frozenset([139, 327, 144, 405])
 PAGE = 20
 BADGE_PATH = "/i/api/2/badge_count/badge_count.json"
+# REST paths of server-design section 9. The commas, "=" and parentheses belong to the path (there is no query
+# string): they go out exactly as written, and the same string is the path of the transaction id.
+TRANSLATE_TWEET_PATH = ("/i/api/1.1/strato/column/None/tweetId={},destinationLanguage=None,"
+                        "translationSource=Some(Google),feature=None,timeout=None,onlyCached=None"
+                        "/translation/service/translateTweet")
+TRANSLATE_PROFILE_PATH = ("/i/api/1.1/strato/column/None/profileUserId={},destinationLanguage=None,"
+                          "translationSource=Some(Google)/translation/service/translateProfile")
 ID_RE = re.compile(r"[0-9]{1,25}")
 HANDLE_RE = re.compile(r"[A-Za-z0-9_]{1,20}")
 TAB_RE = re.compile(r"[A-Za-z0-9_-]{1,40}")
@@ -334,6 +341,25 @@ def _explore_timeline_id(answer, tab):
     raise _bad("指定されたタブはありません。")
 
 
+# ---- translation (server-design section 9) ------------------------------------------------------
+
+def _tweet_translate(request, client, normalizer):
+    tweet_id = _id_param(request, "id", required=True)
+    return _translation(normalizer, client.rest("GET", TRANSLATE_TWEET_PATH.format(tweet_id)))
+
+
+def _user_translate(request, client, normalizer):
+    user_id = _id_param(request, "id", required=True)
+    return _translation(normalizer, client.rest("GET", TRANSLATE_PROFILE_PATH.format(user_id)))
+
+
+def _translation(normalizer, answer):
+    translation = normalizer.normalize_translation(answer)
+    if translation is None:
+        raise RelayError(404, "not_found", "翻訳できませんでした。")
+    return translation
+
+
 # ---- write routes ------------------------------------------------------------------------------
 
 def _graphql_write(client, name, variables):
@@ -433,6 +459,8 @@ ROUTES = {
     ("GET", "/v2/notifications"): _notifications,
     ("GET", "/v2/bookmarks"): _bookmarks,
     ("GET", "/v2/explore"): _explore,
+    ("GET", "/v2/tweet/translate"): _tweet_translate,
+    ("GET", "/v2/user/translate"): _user_translate,
     ("POST", "/v2/tweet/create"): _tweet_create,
     ("POST", "/v2/tweet/delete"): _tweet_delete,
     ("POST", "/v2/tweet/like"): _tweet_like,

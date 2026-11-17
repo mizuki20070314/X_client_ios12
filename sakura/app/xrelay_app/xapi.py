@@ -6,6 +6,7 @@ once after a 353 that came with a rotated ct0.
 """
 
 import json
+import re
 import time
 from collections import namedtuple
 from urllib.parse import urlencode
@@ -22,6 +23,9 @@ except ImportError:  # only real calls need requests; tests inject a session cla
 
 ORIGIN = "https://x.com"
 TIMEOUT = (5, 40)
+# The paths sent to X: no query string (the transaction id covers the path only), and only characters that
+# requests and urllib3 leave as they are, so the URL on the wire is exactly ORIGIN + path (see the tests).
+PATH_RE = re.compile(r"/[A-Za-z0-9_./,=()-]*")
 # the request header as the v1 CGI and server-design section 3.6 send it; the answer default is with charset
 REQUEST_JSON = "application/json"
 ANSWER_JSON = "application/json; charset=utf-8"
@@ -74,7 +78,10 @@ class XClient(object):
         return _interpret(self._call("POST", path, None, _compact(payload).encode("utf-8"), REQUEST_JSON))
 
     def rest(self, method, path, params=None, form=None, json_body=None):
-        """The parsed JSON of one REST call. path is like /i/api/1.1/...; form and json_body are alternatives."""
+        """The parsed JSON of one REST call. path is like /i/api/1.1/...; form and json_body are alternatives.
+
+        The path goes out exactly as given (no re-quoting, see PATH_RE), and it is the transaction-id path too.
+        """
         body = None
         content_type = REQUEST_JSON
         if form is not None:
@@ -91,6 +98,9 @@ class XClient(object):
         return answer.status, answer.content_type, answer.content
 
     def _call(self, method, path, params, body, content_type):
+        if PATH_RE.fullmatch(path) is None:
+            # a programming error; a path that requests would re-quote would also differ from the transaction-id path
+            raise ValueError("unsupported characters in an X request path")
         session = self._new_session()
         try:
             retried_missing = False  # an empty 404 is retried once, with new transaction keys

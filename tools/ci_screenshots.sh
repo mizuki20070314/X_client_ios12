@@ -65,6 +65,9 @@ shot 25_userlist_320 9 -xr-demo -xr-theme light $S -xr-route "wait:1;userlist:10
 shot 28_compose 9 -xr-demo -xr-theme light -xr-route "wait:1;compose;wait:1;type:今日はいい天気ですね。散歩に行ってきます。"
 shot 29_tweet_black 9 -xr-demo -xr-theme black -xr-route "wait:1;tweet:2122000000000000040"
 shot 30_userlist_black 9 -xr-demo -xr-theme black -xr-route "wait:1;userlist:100001;wait:1"
+shot 31_translate_before_320 8 -xr-demo -xr-theme light $S
+shot 32_translate_after_320 10 -xr-demo -xr-theme light $S -xr-route "wait:2;translate:2122000000000000090;wait:1"
+shot 33_profile_translate_320 11 -xr-demo -xr-theme light $S -xr-route "wait:1;profile:alex_demo;wait:2"
 shot 26_icons_light_320 8 -xr-demo -xr-theme light $S -xr-route "icons"
 shot 27_icons_black 8 -xr-demo -xr-theme black -xr-route "icons"
 

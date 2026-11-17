@@ -711,3 +711,43 @@ Registered with `DebugRoutes.register` by the screen that owns them:
 | `userlist:<user id>` | following list |
 | `toast:<text>` | show a toast |
 | `icons` | icon gallery |
+
+## 7. Translation (as in the official app)
+
+Core (`Models.swift`, `RelayClient.swift`):
+
+```swift
+struct Translation { let text: String; let entities: [TextEntity]; let sourceLang: String; let sourceLangName: String; let provider: String; init?(json: JSON) }
+// Tweet: var translatable: Bool (JSON "translatable"); runtime state, not from JSON and kept by merge():
+//        var translation: Translation?, var showsTranslation: Bool, var isTranslating: Bool
+// User:  var bioTranslatable: Bool (JSON "bio_translatable"); var bioTranslation: Translation?, var showsBioTranslation: Bool
+// Tweet.layoutDidChange: Notification.Name("TweetLayoutDidChange") (object: the Tweet), posted by notifyLayoutChanged()
+func translateTweet(id: String, completion: @escaping (Result<Translation, Error>) -> Void)
+func translateUser(id: String, completion: @escaping (Result<Translation, Error>) -> Void)
+```
+
+`TweetActions.toggleTranslation(_ tweet: Tweet)` (Components): already translated → flip `showsTranslation`; else set
+`isTranslating`, call the relay, store `translation`, set `showsTranslation = true`; a failure shows a Toast. Every
+change ends with `tweet.notifyLayoutChanged()`.
+
+Rows (`TweetCell`, `FocalTweetCell`): for a post with `translatable`, directly under the text (2 pt gap) one line,
+15 pt (13 pt in list rows), accent, 22 pt high (18 in list rows):
+
+| state | line | text shown above it |
+|---|---|---|
+| not translated | `ポストを翻訳` | original |
+| loading | `翻訳中…` (secondaryText) | original |
+| translation shown | `<source_lang_name>からGoogleによる翻訳 · 原文を表示` — the first part secondaryText, `原文を表示` accent (provider name from the answer) | the translation (with its entities) |
+| translation hidden again | `翻訳を表示` | original |
+
+The line is its own touch target (it does not open the post). `TimelineViewController` observes
+`Tweet.layoutDidChange`: it clears the layout cache of the rows showing that post and reloads them without
+animation jumps (`UIView.performWithoutAnimation { tableView.beginUpdates(); tableView.endUpdates() }` after
+re-configuring the visible cell, or `reloadRows(at:with: .none)`).
+
+Profile header: under the bio, for `bioTranslatable`, the same line with `自己紹介を翻訳` / `翻訳中…` /
+`<source_lang_name>からGoogleによる翻訳 · 原文を表示` / `翻訳を表示`; the header height follows.
+
+Demo: `/v2/tweet/translate` and `/v2/user/translate` answer `demo_translate.json`; the demo home timeline gets one
+English post (`translatable: true`, id `2122000000000000090`, second item) and the demo detail's focal post stays as
+it is. Debug step `translate:<id>` (Components) calls `TweetActions.toggleTranslation`.

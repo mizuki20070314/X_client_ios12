@@ -29,7 +29,8 @@
         "likes_count": 6120,
         "pinned_ids": [],
         "blocked_by": false,
-        "follow_request_sent": false
+        "follow_request_sent": false,
+        "bio_translatable": false
       }
     },
     {
@@ -60,7 +61,8 @@
         "likes_count": 140,
         "pinned_ids": [],
         "blocked_by": false,
-        "follow_request_sent": false
+        "follow_request_sent": false,
+        "bio_translatable": false
       }
     },
     {
@@ -91,7 +93,8 @@
         "likes_count": 50,
         "pinned_ids": [],
         "blocked_by": false,
-        "follow_request_sent": false
+        "follow_request_sent": false,
+        "bio_translatable": false
       }
     },
     {
@@ -125,7 +128,8 @@
         "likes_count": 3300,
         "pinned_ids": [],
         "blocked_by": false,
-        "follow_request_sent": false
+        "follow_request_sent": false,
+        "bio_translatable": false
       }
     },
     {
@@ -156,7 +160,8 @@
         "likes_count": 560,
         "pinned_ids": [],
         "blocked_by": false,
-        "follow_request_sent": false
+        "follow_request_sent": false,
+        "bio_translatable": false
       }
     },
     {
@@ -187,7 +192,8 @@
         "likes_count": 2040,
         "pinned_ids": [],
         "blocked_by": false,
-        "follow_request_sent": false
+        "follow_request_sent": false,
+        "bio_translatable": false
       }
     }
   ],
