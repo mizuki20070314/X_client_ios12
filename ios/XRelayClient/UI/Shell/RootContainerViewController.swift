@@ -32,8 +32,15 @@ final class RootContainerViewController: UIViewController, UIGestureRecognizerDe
 
     /// Every orientation on an iPad (ui-spec §8.1); a phone stays in portrait.
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if let forced = debugForcedOrientations {
+            return forced
+        }
         return UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
     }
+
+    /// Set for a moment by the `orient:` debug step: iOS only turns the interface when the current orientation is no
+    /// longer allowed.
+    var debugForcedOrientations: UIInterfaceOrientationMask?
 
     // The status bar follows this controller, not the main UI or the drawer.
     override var childForStatusBarStyle: UIViewController? {

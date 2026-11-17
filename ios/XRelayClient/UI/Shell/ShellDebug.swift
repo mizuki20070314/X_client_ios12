@@ -42,8 +42,15 @@ enum ShellDebug {
             default:
                 return
             }
+            let root = RootContainerViewController.current
+            root?.debugForcedOrientations = orientation == .portrait ? .portrait : .landscape
             UIDevice.current.setValue(orientation.rawValue, forKey: "orientation")
             UIViewController.attemptRotationToDeviceOrientation()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                root?.debugForcedOrientations = nil
+                UIViewController.attemptRotationToDeviceOrientation()
+                root?.view.setNeedsLayout()
+            }
         }
     }
 
