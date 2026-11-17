@@ -45,8 +45,11 @@ shot() {
 # landscape route starts with orient:landscape. The seconds after each launch are the matching iPhone shot's + 2 s
 # (the iPad is slower and the rotation takes time). 49 runs last on purpose: the group ends with a launch in portrait.
 if [ "$GROUP" = ipad ]; then
-  SL="-xr-size 1024x768"
-  SP="-xr-size 768x1024"
+  # The full simulator screen, not an -xr-size preview: the preview window does not follow a rotation reliably, and
+  # on the device the window is the whole screen. The content column is 600 pt wide on every iPad, so the shots stand
+  # for the iPad mini 2 (1024x768) apart from wider gutters.
+  SL=""
+  SP=""
   shot 40_ipad_home_land 10 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:2"
   shot 41_ipad_home_scrolled_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:2;scroll:1600"
   shot 42_ipad_tweet_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:1;tweet:2122000000000000040;wait:2"
