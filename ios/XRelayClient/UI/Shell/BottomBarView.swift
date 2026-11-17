@@ -92,20 +92,23 @@ final class BottomBarView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let width = bounds.width
-        let slot = width / CGFloat(BottomBarView.items.count)
+        // the buttons share the content column (ui-spec §8.2); the background and the hairline span the bar
+        let column = Metrics.column(in: bounds)
+        let slot = column.width / CGFloat(BottomBarView.items.count)
         let rowHeight = Metrics.bottomBarHeight
-        separator.frame = CGRect(x: 0, y: 0, width: width, height: Metrics.hairline)
+        separator.frame = CGRect(x: 0, y: 0, width: bounds.width, height: Metrics.hairline)
         for (index, button) in buttons.enumerated() {
-            button.frame = CGRect(x: slot * CGFloat(index), y: 0, width: slot, height: rowHeight)
+            button.frame = CGRect(x: column.minX + slot * CGFloat(index), y: 0, width: slot, height: rowHeight)
         }
-        layoutBadge(notificationBadge, index: BottomBarView.notificationIndex, slot: slot, rowHeight: rowHeight)
-        layoutBadge(messageBadge, index: BottomBarView.messageIndex, slot: slot, rowHeight: rowHeight)
+        layoutBadge(notificationBadge, index: BottomBarView.notificationIndex, originX: column.minX, slot: slot,
+                    rowHeight: rowHeight)
+        layoutBadge(messageBadge, index: BottomBarView.messageIndex, originX: column.minX, slot: slot,
+                    rowHeight: rowHeight)
     }
 
     /// The badge is centred 10 pt right of the icon's centre and 9 pt above it; at least 16 pt high and wide.
-    private func layoutBadge(_ badge: UILabel, index: Int, slot: CGFloat, rowHeight: CGFloat) {
-        let iconX = slot * (CGFloat(index) + 0.5)
+    private func layoutBadge(_ badge: UILabel, index: Int, originX: CGFloat, slot: CGFloat, rowHeight: CGFloat) {
+        let iconX = originX + slot * (CGFloat(index) + 0.5)
         let iconY = rowHeight / 2
         let textSize = badge.sizeThatFits(CGSize(width: 100, height: BottomBarView.badgeHeight))
         let badgeWidth = max(BottomBarView.badgeHeight, ceil(textSize.width) + 8)

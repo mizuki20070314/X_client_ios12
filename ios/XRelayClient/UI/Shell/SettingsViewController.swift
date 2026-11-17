@@ -119,9 +119,13 @@ final class SettingsViewController: BaseViewController, UITextFieldDelegate {
     }
 
     override func layoutContent() {
-        let width = view.bounds.width
+        // the form lives in the content column (ui-spec §8.3): when it is presented full screen on a large screen,
+        // its scroll view is the column; inside a tab the column is the view itself
+        let column = Metrics.column(in: view.bounds)
+        let width = column.width
         let pad = Metrics.pad(width)
-        scrollView.frame = CGRect(x: 0, y: contentTop, width: width, height: max(0, view.bounds.height - contentTop))
+        scrollView.frame = CGRect(x: column.minX, y: contentTop, width: width,
+                                  height: max(0, view.bounds.height - contentTop))
         scrollView.contentInset.bottom = keyboardInset
         scrollView.scrollIndicatorInsets.bottom = keyboardInset
 

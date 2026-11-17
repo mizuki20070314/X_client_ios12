@@ -1,11 +1,17 @@
 #!/bin/bash
 # Installs the simulator build and takes screenshots of the app's screens (used by CI; run on macOS).
-# usage: bash tools/ci_screenshots.sh <XRelayClient.app> <simulator-udid> [name-filter]
+# usage: [GROUP=iphone|ipad] bash tools/ci_screenshots.sh <XRelayClient.app> <simulator-udid> [name-filter]
+#   GROUP       = iphone (default: the iPhone shots) or ipad (only the iPad shots; the udid is the iPad simulator's)
 #   name-filter = comma-separated substrings of the shot names; empty = every shot
 set -u
 APP="$1"
 UDID="$2"
 FILTER="${3:-}"
+GROUP="${GROUP:-iphone}"
+case "$GROUP" in
+  iphone|ipad) ;;
+  *) echo "unknown GROUP: $GROUP (iphone or ipad)" >&2; exit 2 ;;
+esac
 BUNDLE=com.mizuki20070314.XRelayClient
 OUT=shots
 mkdir -p "$OUT"
@@ -35,6 +41,30 @@ shot() {
   fi
 }
 
+# iPad group (GROUP=ipad). Landscape first, then portrait. The simulator stays rotated between launches, so each
+# landscape route starts with orient:landscape. The seconds after each launch are the matching iPhone shot's + 2 s
+# (the iPad is slower and the rotation takes time). 49 runs last on purpose: the group ends with a launch in portrait.
+if [ "$GROUP" = ipad ]; then
+  SL="-xr-size 1024x768"
+  SP="-xr-size 768x1024"
+  shot 40_ipad_home_land 10 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:2"
+  shot 41_ipad_home_scrolled_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:2;scroll:1600"
+  shot 42_ipad_tweet_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:1;tweet:2122000000000000040;wait:2"
+  shot 43_ipad_profile_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:1;profile:hanako_sato_demo;wait:2"
+  shot 44_ipad_drawer_land 10 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:1;drawer;wait:1"
+  shot 45_ipad_overflow_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:2;overflow:2122000000000000001;wait:1"
+  shot 46_ipad_compose_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:1;compose;wait:1;type:今日はいい天気ですね。散歩に行ってきます。"
+  shot 47_ipad_viewer_land 11 -xr-demo -xr-theme light $SL -xr-route "orient:landscape;wait:2;viewer:2122000000000000002:0;wait:2"
+  shot 48_ipad_home_black_land 10 -xr-demo -xr-theme black $SL -xr-route "orient:landscape;wait:2"
+  shot 50_ipad_home_portrait 10 -xr-demo -xr-theme light $SP -xr-route "orient:portrait;wait:2"
+  shot 51_ipad_tweet_portrait 11 -xr-demo -xr-theme light $SP -xr-route "orient:portrait;wait:1;tweet:2122000000000000040;wait:2"
+  shot 49_ipad_reset 10 -xr-demo -xr-theme light $SP -xr-route "orient:portrait"
+  xcrun simctl terminate "$UDID" "$BUNDLE" >/dev/null 2>&1 || true
+  ls -la "$OUT"
+  exit 0
+fi
+
+# iPhone group (default, also when GROUP is unset).
 # The reference size is the iPod touch (320x568); a few shots use the full simulator screen (375 pt wide).
 S="-xr-size 320x568"
 shot 01_home_light_320 8 -xr-demo -xr-theme light $S

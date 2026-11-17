@@ -70,7 +70,9 @@ final class ComposeViewController: BaseViewController, UITextViewDelegate {
     }
 
     override func layoutContent() {
-        let width = view.bounds.width
+        // the text, the reply line and the quote live in the content column (ui-spec §8.3); the bars span the screen
+        let column = Metrics.column(in: view.bounds)
+        let width = column.width
         let pad = Metrics.pad(width)
         let contentX = Metrics.contentX(width)
         let contentWidth = Metrics.contentWidth(width)
@@ -80,11 +82,11 @@ final class ComposeViewController: BaseViewController, UITextViewDelegate {
         let barBottom = min(bottomLimit, keyboardTopInView() ?? bottomLimit)
         let barY = barBottom - ComposeViewController.counterBarHeight
         let top = contentTop
-        body.frame = CGRect(x: 0, y: top, width: width, height: max(0, barY - top))
-        counterBar.frame = CGRect(x: 0, y: barY, width: width, height: ComposeViewController.counterBarHeight)
-        counterHairline.frame = CGRect(x: 0, y: 0, width: width, height: Metrics.hairline)
+        body.frame = CGRect(x: column.minX, y: top, width: width, height: max(0, barY - top))
+        counterBar.frame = CGRect(x: 0, y: barY, width: view.bounds.width, height: ComposeViewController.counterBarHeight)
+        counterHairline.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: Metrics.hairline)
         let ringSide = ComposeViewController.ringSide
-        ring.frame = CGRect(x: width - pad - ringSide, y: (ComposeViewController.counterBarHeight - ringSide) / 2,
+        ring.frame = CGRect(x: column.maxX - pad - ringSide, y: (ComposeViewController.counterBarHeight - ringSide) / 2,
                             width: ringSide, height: ringSide)
         countLabel.frame = ring.bounds
 

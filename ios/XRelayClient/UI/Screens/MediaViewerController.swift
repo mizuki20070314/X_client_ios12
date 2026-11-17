@@ -102,8 +102,11 @@ final class MediaViewerController: BaseViewController, UIScrollViewDelegate, UIG
 
         closeButton.frame = CGRect(x: pad, y: safeTop + 8, width: 36, height: 36)
         counterLabel.frame = CGRect(x: 0, y: safeTop + 8, width: width, height: 36)
-        actionBar.frame = CGRect(x: 0, y: height - safeBottom - MediaViewerController.actionBarHeight,
-                                 width: width, height: MediaViewerController.actionBarHeight)
+        // the action row is at most 600 pt wide and centred (ui-spec §8.3)
+        let barWidth = min(width, Metrics.columnMaxWidth)
+        actionBar.frame = CGRect(x: ((width - barWidth) / 2).rounded(.down),
+                                 y: height - safeBottom - MediaViewerController.actionBarHeight,
+                                 width: barWidth, height: MediaViewerController.actionBarHeight)
     }
 
     // MARK: - setup
@@ -356,6 +359,8 @@ private final class MediaPageView: UIScrollView {
     private(set) var playButton: UIButton?
     private var aspect: CGFloat
     private var hasFullImage = false
+    /// The size the picture was last fitted to; a new size (a rotation) resets the zoom.
+    private var fittedSize = CGSize.zero
     private var previewRequest: ImageRequest?
     private var fullRequest: ImageRequest?
 
@@ -390,6 +395,14 @@ private final class MediaPageView: UIScrollView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        if bounds.size != fittedSize {
+            fittedSize = bounds.size
+            // a new size starts again at zoom 1, as the first layout does, and fits the picture to it
+            if zoomScale != minimumZoomScale {
+                setZoomScale(minimumZoomScale, animated: false)
+            }
+            contentOffset = .zero
+        }
         fitImage()
     }
 

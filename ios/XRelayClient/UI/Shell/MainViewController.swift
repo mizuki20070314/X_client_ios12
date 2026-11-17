@@ -15,6 +15,9 @@ final class MainViewController: UIViewController {
     }
 
     private let bottomBar = BottomBarView()
+    /// The hairlines at the edges of the content column; they show only on a large screen (ui-spec §8.2).
+    private let leftGutterLine = UIView()
+    private let rightGutterLine = UIView()
     /// Created on first selection and kept, so every tab keeps its stack.
     private var navigations: [Tab: XNavigationController] = [:]
     private var shownTab: Tab = .home
@@ -56,6 +59,12 @@ final class MainViewController: UIViewController {
         super.viewDidLoad()
         MainViewController.current = self
         view.backgroundColor = Theme.palette.background
+        for line in [leftGutterLine, rightGutterLine] {
+            line.backgroundColor = Theme.palette.separator
+            line.isUserInteractionEnabled = false
+        }
+        view.addSubview(leftGutterLine)
+        view.addSubview(rightGutterLine)
         bottomBar.onSelect = { [weak self] index in
             guard let tab = Tab(rawValue: index) else { return }
             self?.select(tab)
@@ -78,7 +87,22 @@ final class MainViewController: UIViewController {
         super.viewDidLayoutSubviews()
         let barHeight = Metrics.bottomBarHeight + view.safeAreaInsets.bottom
         bottomBar.frame = CGRect(x: 0, y: view.bounds.height - barHeight, width: view.bounds.width, height: barHeight)
-        shownNavigation?.view.frame = contentFrame
+        let content = contentFrame
+        let column = Metrics.column(in: content)
+        shownNavigation?.view.frame = column
+        layoutGutters(column: column, content: content)
+    }
+
+    /// The hairlines along the two edges of the column, from the top of the screen down to the bottom bar. They lie in
+    /// the gutters beside the column, and are hidden when the column is the full width (a phone).
+    private func layoutGutters(column: CGRect, content: CGRect) {
+        let isNarrowed = column.width < content.width
+        leftGutterLine.isHidden = !isNarrowed
+        rightGutterLine.isHidden = !isNarrowed
+        leftGutterLine.frame = CGRect(x: column.minX - Metrics.hairline, y: content.minY,
+                                      width: Metrics.hairline, height: content.height)
+        rightGutterLine.frame = CGRect(x: column.maxX, y: content.minY,
+                                       width: Metrics.hairline, height: content.height)
     }
 
     // MARK: - tabs
@@ -136,7 +160,7 @@ final class MainViewController: UIViewController {
     private func show(_ navigation: XNavigationController) {
         navigation.beginAppearanceTransition(true, animated: false)
         addChild(navigation)
-        navigation.view.frame = contentFrame
+        navigation.view.frame = Metrics.column(in: contentFrame)
         view.insertSubview(navigation.view, belowSubview: bottomBar)
         navigation.didMove(toParent: self)
         navigation.endAppearanceTransition()

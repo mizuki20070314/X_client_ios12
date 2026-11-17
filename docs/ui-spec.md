@@ -79,7 +79,7 @@ navigation controller; the bottom bar stays visible, as on Android.
 - `enum Tab: Int { case home, search, notifications, messages }`, `var selectedTab: Tab`, `func select(_ tab: Tab)`.
 - `var currentNavigation: XNavigationController`, `var isAtRoot: Bool`.
 - Children are created on first selection (home immediately). The selected child's view fills
-  `(0, 0, w, h − bottomBarHeight − safeAreaInsets.bottom)`.
+  `(0, 0, w, h − bottomBarHeight − safeAreaInsets.bottom)`, or on a large screen its content column (§8.2).
 - Selecting the tab that is already selected: if its stack is deeper than the root, `popToRootViewController`;
   otherwise call `scrollToTopOrRefresh()` on the root if it conforms to `TabRootScrollable`.
 
@@ -696,6 +696,7 @@ Registered with `DebugRoutes.register` by the screen that owns them:
 |---|---|
 | `tab:<0…3>` | select a bottom tab |
 | `drawer` | open the drawer |
+| `orient:<portrait\|landscape>` | rotate the device (iPad); the screens and the preview window follow (§8.5) |
 | `hometab:<0\|1>` | select a home tab |
 | `scroll:<points>` | scroll the visible timeline |
 | `tweet:<id>` | open the post detail |
@@ -751,3 +752,87 @@ Profile header: under the bio, for `bioTranslatable`, the same line with `自己
 Demo: `/v2/tweet/translate` and `/v2/user/translate` answer `demo_translate.json`; the demo home timeline gets one
 English post (`translatable: true`, id `2122000000000000090`, second item) and the demo detail's focal post stays as
 it is. Debug step `translate:<id>` (Components) calls `TweetActions.toggleTranslation`.
+
+## 8. Large screens (iPad, as in the official Android app on tablets)
+
+What the official Android app (12.43) does on a tablet, read from the APK: there is **no tablet-only layout** — no
+navigation rail, no second pane, no tablet layout resources. It keeps the phone structure (top bar, home tabs, bottom
+bar, drawer, floating compose button) and, behind the switch `android_large_screens_horizontal_inset_enabled`, insets
+the content horizontally on large screens so that it reads as one centred column. Bottom sheets keep the Material
+maximum width of 640 dp. This app does the same. The target device is the iPad mini 2 (iOS 12, 768×1024 pt portrait,
+1024×768 landscape, 20 pt status bar, no home indicator).
+
+### 8.1 Orientation and multitasking
+
+- iPad: all four orientations (`UISupportedInterfaceOrientations~ipad`: portrait, portrait upside down, landscape
+  left, landscape right). iPhone / iPod touch: portrait only, as now.
+- `UIRequiresFullScreen = YES` (no Slide Over / Split View; the iPad mini 2 has no Split View anyway). So on an iPad
+  the window is always the full screen.
+- Every screen must lay out again when its bounds change (frames only, from `viewDidLayoutSubviews` /
+  `layoutSubviews`, never from `UIScreen` sizes and never cached from the first layout). Presented controllers
+  (compose, media viewer, settings at first launch, sheets, the drawer) rotate with the app.
+- `-xr-size WxH` (CI): the preview window stays centred on the screen after a rotation (re-centre it when the
+  screen bounds change), with the same 20 pt top safe area.
+
+### 8.2 The content column
+
+```swift
+extension Metrics {
+    /// The widest the content column gets (X's own reading width).
+    static let columnMaxWidth: CGFloat = 600
+    /// True for a "large screen": the view is at least 600 pt wide (iPad in both orientations; never an iPhone).
+    static func isLarge(_ width: CGFloat) -> Bool
+    /// The column inside `bounds`: full width below 600 + 2 × 16 pt, otherwise 600 pt wide, centred, rounded to
+    /// whole points. Height and y are those of `bounds`.
+    static func column(in bounds: CGRect) -> CGRect
+}
+```
+
+- `MainViewController` places the selected tab's navigation view in `Metrics.column(in: contentFrame)` instead of
+  the full width. Everything pushed on a tab (home, detail, profile, search, notifications, messages, settings,
+  history, lists) therefore lays out for a 600 pt wide view and needs no change of its own; on a 320/375 pt phone the
+  column is the full width and nothing changes (the 320 pt CI shots must stay pixel-identical in layout).
+- The two side gutters are `palette.background` with one hairline (`palette.separator`) along each edge of the column
+  from the top of the screen down to the bottom bar (like X on the web). The status bar area of the gutters is the
+  same background, so the top bar reads as one band.
+- `BottomBarView` keeps its full-width background and top hairline, but its four buttons share the column's width
+  (centred), not the screen's.
+- Because the column is 600 pt in both orientations, rotating an iPad does not change any row height: rotation only
+  changes how many rows are visible.
+
+### 8.3 Other surfaces
+
+- **Drawer**: unchanged rule `min(width × 0.85, 300)` → 300 pt from the left edge of the screen; the dimming covers
+  the whole screen.
+- **Bottom sheets** (`BottomSheet`, `ThemeSheet`, the repost / share / overflow menus): at most 640 pt wide, centred
+  horizontally at the bottom of the screen; only the top two corners are rounded, as now. The
+  dimming covers the whole screen.
+- **Compose** (`ComposeViewController`, full screen): its top bar spans the screen; the text area, the media strip,
+  the reply context and the bottom tool row are laid out in `Metrics.column(in:)` of its view (the tool row's
+  background may span the screen, its buttons stay in the column). The keyboard handling is unchanged (frames in
+  window coordinates converted to the view).
+- **Media viewer**: full screen in every orientation. On a bounds change the paging scroll keeps the current page
+  (content size, page frames and offset recomputed), each page resets its zoom and fits the photo to the new size.
+  The bottom action row is centred and at most 600 pt wide.
+- **Toasts**: at most 600 pt wide, centred above the bottom bar.
+- **Dialogs** (`UIAlertController`): style `.alert` only, so no popover anchor is needed; any `.actionSheet` or
+  `UIActivityViewController` must set `popoverPresentationController.sourceView/sourceRect` (§5 share note).
+- **Settings at first launch** (presented full screen): its content in the column like the tab screens (it is a
+  `BaseViewController` inside an `XNavigationController` presented full screen — place the presented navigation
+  view's content in the column the same way, e.g. `XNavigationController` lays out its top view controller in
+  `Metrics.column(in:)` when it is presented, or the settings screen insets itself).
+- Floating compose button (home): 16 pt from the column's right edge (it is inside the column already).
+
+### 8.4 Type
+
+The official app scales a few Compose text styles by the smallest screen width (`Sw600`, `Sw720` steps), but the
+timeline keeps its phone sizes. This app keeps the phone sizes of §1 on the iPad.
+
+### 8.5 CI
+
+A second simulator (an iPad whose landscape screen is at least 1024×768 pt, e.g. "iPad (10th generation)" or
+"iPad (A16)") takes iPad shots with `-xr-size 1024x768` (landscape) and `-xr-size 768x1024` (portrait). Debug step
+`orient:<portrait|landscape>` rotates the device (`UIDevice.current.setValue(<orientation>.rawValue, forKey:
+"orientation")` + `UIViewController.attemptRotationToDeviceOrientation()`). The simulator stays rotated between
+launches, so the iPad group rotates first and returns to portrait at its end. Landscape screenshots from
+`simctl io screenshot` are saved rotated by 90°; the reader turns them back.

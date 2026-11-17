@@ -21,7 +21,9 @@ enum Toast {
         label.textColor = UIColor.white
         label.textAlignment = .center
         label.numberOfLines = 0
-        let maxTextWidth = window.bounds.width - 2 * 16 - 2 * padX
+        // at most 600 pt wide on a large screen (ui-spec §8.3); a phone keeps its 16 pt margins
+        let maxPillWidth = min(window.bounds.width - 2 * 16, Metrics.columnMaxWidth)
+        let maxTextWidth = maxPillWidth - 2 * padX
         let fitted = label.sizeThatFits(CGSize(width: maxTextWidth, height: CGFloat.greatestFiniteMagnitude))
         let textWidth = fitted.width.rounded(.up)
         let textHeight = fitted.height.rounded(.up)

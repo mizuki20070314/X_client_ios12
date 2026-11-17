@@ -21,6 +21,11 @@ class BaseViewController: UIViewController {
         return view.safeAreaInsets.top + Metrics.topBarHeight + topBarAccessoryHeight
     }
 
+    /// Every orientation on an iPad (ui-spec §8.1): a presented screen rotates with the app.
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = Theme.palette.background

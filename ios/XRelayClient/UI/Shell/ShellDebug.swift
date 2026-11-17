@@ -31,6 +31,20 @@ enum ShellDebug {
                 selectable.selectMode(index)
             }
         }
+        DebugRoutes.register("orient") { argument in
+            // the device turns, and the screens rotate with it (iPad; ui-spec §8.5)
+            let orientation: UIInterfaceOrientation
+            switch argument {
+            case "portrait":
+                orientation = .portrait
+            case "landscape":
+                orientation = .landscapeLeft
+            default:
+                return
+            }
+            UIDevice.current.setValue(orientation.rawValue, forKey: "orientation")
+            UIViewController.attemptRotationToDeviceOrientation()
+        }
     }
 
     /// The top-most visible controller: the presented ones first, then the selected tab's top screen.

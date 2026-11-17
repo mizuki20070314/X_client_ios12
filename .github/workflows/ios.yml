@@ -127,6 +127,37 @@ jobs:
           test -d "$app_path"
           bash tools/ci_screenshots.sh "$app_path" "$SIMULATOR_UDID"
 
+      - name: Boot simulator (iPad)
+        run: |
+          set -euo pipefail
+          # the first of these that is installed (each has a landscape screen of at least 1024x768 pt)
+          device_udid=""
+          for device_name in "iPad (A16)" "iPad (10th generation)" "iPad Air 11-inch (M2)" "iPad Air 11-inch (M3)"; do
+            # sed rather than head: head would close the pipe early and make grep fail with SIGPIPE
+            device_udid="$(xcrun simctl list devices available | grep -F "$device_name (" | sed -n '1p' | grep -oE "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}" || true)"
+            if [ -n "$device_udid" ]; then
+              echo "iPad simulator: $device_name ($device_udid)"
+              break
+            fi
+          done
+          if [ -z "$device_udid" ]; then
+            echo "none of the iPad candidates is available; the iPads installed are:" >&2
+            xcrun simctl list devices available | grep -F "iPad" >&2 || true
+            exit 1
+          fi
+          echo "IPAD_UDID=$device_udid" >> "$GITHUB_ENV"
+          # the iPhone shots are taken: free the iPhone simulator's memory before the iPad boots
+          xcrun simctl shutdown "$SIMULATOR_UDID" 2>/dev/null || true
+          xcrun simctl boot "$device_udid" 2>/dev/null || true
+          xcrun simctl bootstatus "$device_udid" -b
+
+      - name: Take screenshots (iPad)
+        run: |
+          set -euo pipefail
+          app_path="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/XRelayClient.app"
+          test -d "$app_path"
+          GROUP=ipad bash tools/ci_screenshots.sh "$app_path" "$IPAD_UDID"
+
       - name: Collect crash reports
         if: always()
         run: |

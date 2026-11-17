@@ -31,12 +31,35 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             name: Notification.Name("ThemeDidChange"),
             object: nil
         )
+        if previewSize != nil {
+            // the preview stays centred on the screen after a rotation (ui-spec §8.1)
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(interfaceOrientationDidChange),
+                name: UIApplication.didChangeStatusBarOrientationNotification,
+                object: nil
+            )
+        }
         DebugRoutes.runIfRequested()
         return true
     }
 
     @objc private func themeDidChange() {
         window?.rootViewController = makeRoot()
+    }
+
+    /// UIKit may still adjust the window while the screen turns, so the frame is set
+    /// again on the next turn of the run loop.
+    @objc private func interfaceOrientationDidChange() {
+        placePreviewWindow()
+        DispatchQueue.main.async { [weak self] in
+            self?.placePreviewWindow()
+        }
+    }
+
+    private func placePreviewWindow() {
+        guard previewSize != nil, let window = window else { return }
+        window.frame = AppDelegate.windowFrame(preview: previewSize)
     }
 
     private func makeRoot() -> UIViewController {
@@ -49,8 +72,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     /// `-xr-size WxH`: a window of that size, centred on the screen (the same trick as the reference project).
+    /// The screen is the one the interface is in now: `coordinateSpace` turns with the orientation,
+    /// `UIScreen.bounds` does not.
     private static func windowFrame(preview: CGSize?) -> CGRect {
-        let screen = UIScreen.main.bounds
+        let screen = UIScreen.main.coordinateSpace.bounds
         guard let size = preview else { return screen }
         return CGRect(
             x: (screen.width - size.width) / 2,

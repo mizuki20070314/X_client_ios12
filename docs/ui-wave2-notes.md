@@ -54,7 +54,7 @@ All registrations happen in a `static func registerDebugSteps()` of one type per
 
 | part | steps (ui-spec.md §6) |
 |---|---|
-| Shell | `tab`, `drawer`, `settings`, `history`, `themesheet`, `toast`, `userlist`, `mode` (finds the top-most visible view controller — presented ones first, then the selected tab's top — and calls `selectMode` when it is `ModeSelectable`) |
+| Shell | `tab`, `drawer`, `orient`, `settings`, `history`, `themesheet`, `toast`, `userlist`, `mode` (finds the top-most visible view controller — presented ones first, then the selected tab's top — and calls `selectMode` when it is `ModeSelectable`) |
 | Components | `overflow`, `repostmenu`, `sharemenu`, `like`, `bookmark` (posts come from `TweetStore.shared.tweet(id:)`) |
 | Timeline | `scroll` (the visible `TimelineViewController`: walk the top-most view controller's children) |
 | Screens | `hometab`, `tweet`, `profile`, `search`, `compose`, `reply`, `quote`, `type`, `viewer` |

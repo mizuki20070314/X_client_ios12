@@ -68,6 +68,8 @@ private final class BottomSheetViewController: UIViewController {
     private static let titleHeight: CGFloat = 44
     private static let rowHeight: CGFloat = 52
     private static let bottomGap: CGFloat = 8
+    /// The Material maximum width of a sheet; on a large screen the sheet is centred at this width (ui-spec §8.3).
+    private static let maxWidth: CGFloat = 640
 
     private let sheetTitle: String?
     private let items: [BottomSheetItem]
@@ -93,6 +95,11 @@ private final class BottomSheetViewController: UIViewController {
 
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return Theme.statusBarStyle
+    }
+
+    /// Every orientation on an iPad (ui-spec §8.1): the sheet rotates with the screen under it.
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
     }
 
     override func viewDidLoad() {
@@ -174,9 +181,12 @@ private final class BottomSheetViewController: UIViewController {
         return row
     }
 
-    /// Places the sheet for its progress: the bottom of the screen at 0, the shown position at 1.
+    /// Places the sheet for its progress: the bottom of the screen at 0, the shown position at 1. The sheet is at most
+    /// 640 pt wide and centred, so on a phone it is the full width as before.
     private func layoutSheet() {
-        let width = view.bounds.width
+        let screenWidth = view.bounds.width
+        let width = min(screenWidth, BottomSheetViewController.maxWidth)
+        let originX = ((screenWidth - width) / 2).rounded(.down)
         let titleHeight = sheetTitle == nil ? CGFloat(0) : BottomSheetViewController.titleHeight
         let rowsHeight = CGFloat(items.count) * BottomSheetViewController.rowHeight
         let chromeHeight = BottomSheetViewController.grabberZone + BottomSheetViewController.bottomGap
@@ -185,7 +195,7 @@ private final class BottomSheetViewController: UIViewController {
 
         dimView.frame = view.bounds
         dimView.alpha = progress
-        sheetView.frame = CGRect(x: 0, y: view.bounds.height - height * progress, width: width, height: height)
+        sheetView.frame = CGRect(x: originX, y: view.bounds.height - height * progress, width: width, height: height)
 
         grabber.frame = CGRect(x: (width - 36) / 2, y: 8, width: 36, height: 4)
         let pad = Metrics.pad(width)

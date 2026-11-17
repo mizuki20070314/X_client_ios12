@@ -12,6 +12,11 @@ final class XNavigationController: UINavigationController, UIGestureRecognizerDe
         return nil
     }
 
+    /// Every orientation on an iPad (ui-spec §8.1), as the screens it shows.
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setNavigationBarHidden(true, animated: false)

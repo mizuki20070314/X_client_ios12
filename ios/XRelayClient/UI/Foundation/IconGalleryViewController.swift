@@ -31,6 +31,11 @@ final class IconGalleryViewController: UIViewController {
         return Theme.statusBarStyle
     }
 
+    /// Every orientation on an iPad, as the other full-screen controllers (ui-spec §8.1).
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         let palette = Theme.palette

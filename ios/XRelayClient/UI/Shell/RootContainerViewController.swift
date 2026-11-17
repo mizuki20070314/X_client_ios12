@@ -30,6 +30,11 @@ final class RootContainerViewController: UIViewController, UIGestureRecognizerDe
         return Theme.statusBarStyle
     }
 
+    /// Every orientation on an iPad (ui-spec §8.1); a phone stays in portrait.
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
+    }
+
     // The status bar follows this controller, not the main UI or the drawer.
     override var childForStatusBarStyle: UIViewController? {
         return nil
